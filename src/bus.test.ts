@@ -254,4 +254,29 @@ describe("bus", () => {
     // @ts-expect-error
     expect(() => bus.subscribe("unknown", jest.fn())).toThrowError(`${errorPrefix}Invalid event: "unknown"`);
   });
+
+  it("awaits for an event to be published", async () => {
+    const bus = create({ schema });
+    const promise = bus.waitFor("foo");
+    bus.publish("foo", { field: "test" });
+    expect(await promise).toEqual({ field: "test" });
+  });
+
+  it("awaits for an event to be published with a timeout", async () => {
+    const bus = create({ schema });
+    const promise = bus.waitFor("foo", { timeout: 10 });
+    await expect(promise).rejects.toThrowError(`${errorPrefix}Timeout waiting for event: "foo"`);
+  });
+
+  it("awaits for an event to be published with a filter", async () => {
+    const bus = create({ schema });
+
+    let promise = bus.waitFor("foo", { filter: (event) => event.field === "test", timeout: 10 });
+    bus.publish("foo", { field: "not-test" });
+    await expect(promise).rejects.toThrowError(`${errorPrefix}Timeout waiting for event: "foo"`);
+
+    promise = bus.waitFor("foo", { filter: (event) => event.field === "test", timeout: 10 });
+    bus.publish("foo", { field: "test" });
+    expect(await promise).toEqual({ field: "test" });
+  });
 });

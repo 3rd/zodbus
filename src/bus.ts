@@ -1,5 +1,5 @@
 import { ZodType } from "zod";
-import { ValidationError } from "./errors";
+import { RuntimeError, ValidationError } from "./errors";
 import type { MappedSubscriptionListenerPayloads, MappedSubscriptionListeners, Schema, SchemaPaths } from "./types";
 import { getSubPubPathMap } from "./utils/schema";
 
@@ -131,12 +131,42 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
     return targetListeners;
   };
 
+  /** Waits for an event to be published.
+   * Returns a promise that resolves when the event is published.
+   * @param event The event to wait for.
+   * @param options.timeout The timeout in milliseconds. Defaults to 10000.
+   * @param options.filter A function that returns true if the event should be accepted.
+   * @returns A promise that resolves when the event is published with the data passed to the listener. */
+  const waitFor = <K extends SubscriptionKey>(
+    event: K,
+    options: { timeout?: number; filter?: (data: SubscriptionListenerPayloads[K]) => boolean } = {}
+  ) => {
+    const { timeout = 5_000, filter } = options;
+    return new Promise<SubscriptionListenerPayloads[K]>((resolve, reject) => {
+      let timeoutId: ReturnType<typeof setTimeout>;
+      const listener = (data: unknown) => {
+        if (filter && !filter(data as SubscriptionListenerPayloads[K])) return;
+        unsubscribe(event, listener as unknown as SubscriptionListeners[K]);
+        resolve(data as SubscriptionListenerPayloads[K]);
+        clearTimeout(timeoutId);
+      };
+      subscribe(event, listener as unknown as SubscriptionListeners[K]);
+      if (timeout) {
+        timeoutId = setTimeout(() => {
+          unsubscribe(event, listener as unknown as SubscriptionListeners[K]);
+          reject(new RuntimeError(`Timeout waiting for event: "${event}"`));
+        }, timeout);
+      }
+    });
+  };
+
   return {
     publish,
     subscribe,
     subscribeOnce,
     unsubscribe,
     getListeners,
+    waitFor,
   };
 }
 
