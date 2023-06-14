@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { z } from "zod";
 import { create } from "./bus";
 

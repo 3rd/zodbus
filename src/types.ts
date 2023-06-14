@@ -30,7 +30,6 @@ export type InferHandler<T, K> = K extends `${infer Left}.${infer Right}`
   ? WildcardListener
   : never;
 
-export type StringPath<T> = T extends string ? T : never;
 export type ZodTypePath<T, K extends keyof T = keyof T> = K extends string
   ? IsZodType<T[K]> extends true
     ? K
@@ -41,7 +40,7 @@ export type SchemaPath<T, K extends keyof T = keyof T> = K extends string
     ? `${K}.${SchemaPaths<T[K], keyof T[K]>}`
     : never
   : never;
-export type SchemaPaths<T, K extends keyof T = keyof T> = StringPath<K> | ZodTypePath<T, K> | SchemaPath<T, K>;
+export type SchemaPaths<T, K extends keyof T = keyof T> = ZodTypePath<T, K> | SchemaPath<T, K>;
 
 export type WildcardPaths<T extends string> = T extends `${infer L}.${infer R}`
   ? IsZodType<L> extends true

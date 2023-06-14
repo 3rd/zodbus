@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
+import type { HasWildcard, InferHandler, MappedHandlers, SchemaPaths, WildcardPaths } from "./types";
 import { z } from "zod";
-import { HasWildcard, InferHandler, MappedHandlers, SchemaPaths, WildcardPaths } from "./types";
 import { create } from ".";
 
 // debug
@@ -18,11 +18,11 @@ const testSchema = {
   },
 };
 
-type TestHandlers = MappedHandlers<typeof testSchema>;
-type TestDotNotation = SchemaPaths<typeof testSchema>;
-type TestWildcardPaths = WildcardPaths<SchemaPaths<typeof testSchema>>;
+type DebugMappedHandlers = MappedHandlers<typeof testSchema>;
+type DebugSchemaPaths = SchemaPaths<typeof testSchema>;
+type DebugWildcardPaths = WildcardPaths<SchemaPaths<typeof testSchema>>;
 type DebugHasWildcard = HasWildcard<"zap.zop.*.zip">;
-type DebugInferHandler = InferHandler<typeof testSchema, "zap.zop.*zip">;
+type DebugInferHandler = InferHandler<typeof testSchema, "zap.zop.*.zip">;
 
 const test = create({ schema: testSchema });
 test.subscribe("zap.zop.*.zip", (data) => {
@@ -43,6 +43,8 @@ test.subscribe("zap.zop.zup.unknown", (data) => {
   data.field; // string
 });
 // fail
-test.subscribe("zap.zop.zup.zip", (data) => {
+test.subscribe("zap.zop.zup.*", (data) => {
   data.unknown; // fail
 });
+
+test.publish("bar.baz", { field: "test" });

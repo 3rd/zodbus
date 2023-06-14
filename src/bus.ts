@@ -1,6 +1,6 @@
 import { ZodType } from "zod";
 import { ValidationError } from "./errors";
-import { MappedHandlers, Schema } from "./types";
+import type { MappedHandlers, Schema, SchemaPaths } from "./types";
 
 type BusOptions<T extends Schema> = {
   schema: T;
@@ -69,7 +69,7 @@ function create<T extends Schema>({ schema, validate = false }: BusOptions<T>) {
   /** Publish an event. All listeners for the event will be called with the provided data.
    * @param event The event to publish.
    * @param data The data to pass to the listeners.*/
-  const publish = <K extends Extract<keyof Handlers, string>>(event: K, data: Parameters<Handlers[K]>[0]) => {
+  const publish = <K extends Extract<keyof Handlers, SchemaPaths<T>>>(event: K, data: Parameters<Handlers[K]>[0]) => {
     if (validate) validatePayloadOrPanic(event, data);
     if (!listeners.has(event)) return;
     for (const listener of listeners.get(event)!) {
