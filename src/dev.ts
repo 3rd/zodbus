@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { z } from "zod";
-import type {
-  HasWildcard,
-  InferSubscriptionListener,
-  MappedSubscriptionListeners,
-  SchemaPaths,
-  WildcardPaths,
-} from "./types";
+import type { HasWildcard, InferSubscriptionListener, SubscriptionListeners, SchemaPath, WildcardPath } from "./types";
 import { create } from ".";
 
 const testSchema = {
@@ -22,13 +16,13 @@ const testSchema = {
 };
 const test = create({ schema: testSchema });
 
-type DebugSchemaPaths = SchemaPaths<typeof testSchema>;
-type DebugWildcardPaths = WildcardPaths<SchemaPaths<typeof testSchema>>;
+type DebugSchemaPath = SchemaPath<typeof testSchema>;
+type DebugWildcardPath = WildcardPath<SchemaPath<typeof testSchema>>;
 type DebugHasWildcard = HasWildcard<"zap.*.zup">;
-type DebugInferListener = InferSubscriptionListener<typeof testSchema, "foo.bar.*">;
-type DebugSubscriptionListeners = MappedSubscriptionListeners<typeof testSchema>;
+type DebugInferListener = InferSubscriptionListener<typeof testSchema, "bar.baz">;
+type DebugSubscriptionListeners = SubscriptionListeners<typeof testSchema>;
 
-const testSchemaPaths: "foo" | "bar.baz" | "zap.zop.zup" = {} as SchemaPaths<typeof testSchema>;
+const testSchemaPaths: "foo" | "bar.baz" | "zap.zop.zup" = {} as SchemaPath<typeof testSchema>;
 const testWildcardPaths:
   | "foo"
   | "*"
@@ -44,7 +38,7 @@ const testWildcardPaths:
   | "*.zop.zup"
   | "*.*.*"
   | "*.zop.*"
-  | "*.*.zup" = {} as WildcardPaths<SchemaPaths<typeof testSchema>>;
+  | "*.*.zup" = {} as WildcardPath<SchemaPath<typeof testSchema>>;
 
 const testHasWildcard: true = {} as HasWildcard<"*.zop.zup">;
 const testHasWildcard2: true = {} as HasWildcard<"zap.*.zup">;
@@ -79,7 +73,7 @@ const testSubscriptionListeners: {
   "*.zop.*": (data: { field: string }, event: string) => void;
   "*.*.zup": (data: { field: string }, event: string) => void;
   "*.*.*": (data: { field: string }, event: string) => void;
-} = {} as MappedSubscriptionListeners<typeof testSchema>;
+} = {} as SubscriptionListeners<typeof testSchema>;
 
 // PASS
 test.subscribe("zap.*.zup", (data, event) => {

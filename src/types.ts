@@ -59,38 +59,36 @@ export type ZodTypePath<T, K extends keyof T = keyof T> = K extends string
     ? K
     : never
   : never;
-export type SchemaPath<T, K extends keyof T = keyof T> = K extends string
+export type NamespacePath<T, K extends keyof T = keyof T> = K extends string
   ? IsSchema<T[K]> extends true
-    ? `${K}.${SchemaPaths<T[K], keyof T[K]>}`
+    ? `${K}.${SchemaPath<T[K], keyof T[K]>}`
     : never
   : never;
-export type SchemaPaths<T, K extends keyof T = keyof T> = ZodTypePath<T, K> | SchemaPath<T, K>;
+export type SchemaPath<T, K extends keyof T = keyof T> = ZodTypePath<T, K> | NamespacePath<T, K>;
 
-export type WildcardPaths<T extends string> = T extends `${infer L}.${infer R}`
+export type WildcardPath<T extends string> = T extends `${infer L}.${infer R}`
   ? IsZodType<L> extends true
-    ? `${L}.${WildcardPaths<R>}` | `${L}.*`
-    : `${L}.${WildcardPaths<R>}` | `${L}.*` | `*.${WildcardPaths<R>}`
+    ? `${L}.${WildcardPath<R>}` | `${L}.*`
+    : `${L}.${WildcardPath<R>}` | `${L}.*` | `*.${WildcardPath<R>}`
   : T | "*";
 
 export type ExcludeDirectlyNestedKeys<T extends string> = T extends `${infer L}.${infer R}`
   ? L | ExcludeDirectlyNestedKeys<R>
   : never;
 
-export type MappedSubscriptionListeners<T extends Schema> = {
-  [K in Exclude<WildcardPaths<SchemaPaths<T>>, ExcludeDirectlyNestedKeys<SchemaPaths<T>>>]: InferSubscriptionListener<
+export type SubscriptionListeners<T extends Schema> = {
+  [K in Exclude<WildcardPath<SchemaPath<T>>, ExcludeDirectlyNestedKeys<SchemaPath<T>>>]: InferSubscriptionListener<
     T,
     K
   >;
 };
 
-export type MappedSubscriptionListenerPayloads<T extends Schema> = {
+export type SubscriptionListenerPayloads<T extends Schema> = {
   [K in Exclude<
-    WildcardPaths<SchemaPaths<T>>,
-    ExcludeDirectlyNestedKeys<SchemaPaths<T>>
+    WildcardPath<SchemaPath<T>>,
+    ExcludeDirectlyNestedKeys<SchemaPath<T>>
   >]: InferSubscriptionListenerPayload<T, K>;
 };
 
-export type SubscriptionListeners<T extends Schema> = MappedSubscriptionListeners<T>;
-export type SubscriptionListenerPayloads<T extends Schema> = MappedSubscriptionListenerPayloads<T>;
 export type SubscriptionKey<T extends Schema> = Extract<keyof SubscriptionListeners<T>, string>;
-export type PublishKey<T extends Schema> = Extract<SubscriptionKey<T>, SchemaPaths<T>>;
+export type PublishKey<T extends Schema> = Extract<SubscriptionKey<T>, SchemaPath<T>>;
