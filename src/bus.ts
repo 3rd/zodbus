@@ -8,7 +8,7 @@ type BusOptions<T extends Schema> = {
   validate?: boolean;
 };
 
-function create<T extends Schema>({ schema, validate = false }: BusOptions<T>) {
+function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
   type SubscriptionHandlers = MappedSubscriptionHandlers<T>;
   type SubscriptionHandlerPayloads = MappedSubscriptionHandlerPayloads<T>;
   type SubscriptionKey = Extract<keyof SubscriptionHandlers, string>;
