@@ -83,16 +83,34 @@ describe("bus", () => {
   });
 
   it("subscribes to events with wildcards", () => {
-    const defaultHandler = jest.fn();
-    const wildcardHandler = jest.fn();
+    const events = (
+      [
+        "zap.zop.zup.zip",
+        "zap.zop.zup.*",
+        "zap.zop.*.zip",
+        "zap.zop.*.*",
+        "zap.*.zup.zip",
+        "zap.*.zup.*",
+        "zap.*.*.zip",
+        "zap.*.*.*",
+        "*.zop.zup.zip",
+        "*.zop.zup.*",
+        "*.zop.*.zip",
+        "*.zop.*.*",
+        "*.*.zup.zip",
+        "*.*.zup.*",
+        "*.*.*.zip",
+        "*.*.*.*",
+      ] as const
+    ).map((event) => [event, jest.fn()] as const);
     const bus = create({ schema });
-    bus.subscribe("*.zop.zup.zip", defaultHandler);
-    bus.subscribe("zap.zop.zup.*", wildcardHandler);
+    for (const [event, handler] of events) {
+      bus.subscribe(event, handler);
+    }
     bus.publish("zap.zop.zup.zip", { field: "test" });
-    expect(defaultHandler).toHaveBeenCalledWith({ field: "test" }, "zap.zop.zup.zip");
-    expect(defaultHandler).toHaveBeenCalledTimes(1);
-    expect(wildcardHandler).toHaveBeenCalledWith({ field: "test" }, "zap.zop.zup.zip");
-    expect(wildcardHandler).toHaveBeenCalledTimes(1);
+    for (const [_, handler] of events) {
+      expect(handler).toHaveBeenCalledWith({ field: "test" }, "zap.zop.zup.zip");
+    }
   });
 
   it("only calls a handler once if subscribed through multiple wildcard variations", () => {
