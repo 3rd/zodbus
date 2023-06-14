@@ -123,7 +123,6 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
     subscribeOnce,
     unsubscribe,
     getListeners,
-    listeners,
   };
 }
 

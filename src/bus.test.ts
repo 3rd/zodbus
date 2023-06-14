@@ -209,14 +209,4 @@ describe("bus", () => {
       expect(() => bus.publish("foo", { field: 1 })).not.toThrowError();
     });
   });
-
-  it("returns the listener map", () => {
-    const handler = jest.fn();
-    const bus = create({ schema });
-
-    expect(bus.listeners).toEqual(new Map());
-
-    bus.subscribe("zap.*.*.zip", handler);
-    expect(bus.listeners).toEqual(new Map([["zap.zop.zup.zip", new Set([handler])]]));
-  });
 });
