@@ -14,7 +14,7 @@ export type HasWildcard<T extends string> = T extends
   ? true
   : false;
 
-export type InferSubscriptionHandler<
+export type InferSubscriptionListener<
   T,
   K extends string,
   P extends string = ""
@@ -23,7 +23,7 @@ export type InferSubscriptionHandler<
     ? Listener
     : Left extends keyof T
     ? T[Left] extends Schema
-      ? InferSubscriptionHandler<T[Left], Right, `${P}${Left}.`>
+      ? InferSubscriptionListener<T[Left], Right, `${P}${Left}.`>
       : never
     : never
   : K extends keyof T
@@ -34,7 +34,7 @@ export type InferSubscriptionHandler<
   ? Listener
   : never;
 
-export type InferSubscriptionHandlerPayload<
+export type InferSubscriptionListenerPayload<
   T,
   K extends string,
   P extends string = ""
@@ -43,7 +43,7 @@ export type InferSubscriptionHandlerPayload<
     ? unknown
     : Left extends keyof T
     ? T[Left] extends Schema
-      ? InferSubscriptionHandlerPayload<T[Left], Right, `${P}${Left}.`>
+      ? InferSubscriptionListenerPayload<T[Left], Right, `${P}${Left}.`>
       : never
     : never
   : K extends keyof T
@@ -76,16 +76,16 @@ export type ExcludeDirectlyNestedKeys<T extends string> = T extends `${infer L}.
   ? L | ExcludeDirectlyNestedKeys<R>
   : never;
 
-export type MappedSubscriptionHandlers<T extends Schema> = {
-  [K in Exclude<WildcardPaths<SchemaPaths<T>>, ExcludeDirectlyNestedKeys<SchemaPaths<T>>>]: InferSubscriptionHandler<
+export type MappedSubscriptionListeners<T extends Schema> = {
+  [K in Exclude<WildcardPaths<SchemaPaths<T>>, ExcludeDirectlyNestedKeys<SchemaPaths<T>>>]: InferSubscriptionListener<
     T,
     K
   >;
 };
 
-export type MappedSubscriptionHandlerPayloads<T extends Schema> = {
+export type MappedSubscriptionListenerPayloads<T extends Schema> = {
   [K in Exclude<
     WildcardPaths<SchemaPaths<T>>,
     ExcludeDirectlyNestedKeys<SchemaPaths<T>>
-  >]: InferSubscriptionHandlerPayload<T, K>;
+  >]: InferSubscriptionListenerPayload<T, K>;
 };

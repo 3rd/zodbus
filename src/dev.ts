@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import type {
   HasWildcard,
-  InferSubscriptionHandler,
-  MappedSubscriptionHandlers,
+  InferSubscriptionListener,
+  MappedSubscriptionListeners,
   SchemaPaths,
   WildcardPaths,
 } from "./types";
@@ -25,8 +25,8 @@ const test = create({ schema: testSchema });
 type DebugSchemaPaths = SchemaPaths<typeof testSchema>;
 type DebugWildcardPaths = WildcardPaths<SchemaPaths<typeof testSchema>>;
 type DebugHasWildcard = HasWildcard<"zap.*.zup">;
-type DebugInferHandler = InferSubscriptionHandler<typeof testSchema, "foo.bar.*">;
-type DebugSubscriptionHandlers = MappedSubscriptionHandlers<typeof testSchema>;
+type DebugInferListener = InferSubscriptionListener<typeof testSchema, "foo.bar.*">;
+type DebugSubscriptionListeners = MappedSubscriptionListeners<typeof testSchema>;
 
 const testSchemaPaths: "foo" | "bar.baz" | "zap.zop.zup" = {} as SchemaPaths<typeof testSchema>;
 const testWildcardPaths:
@@ -51,20 +51,20 @@ const testHasWildcard2: true = {} as HasWildcard<"zap.*.zup">;
 const testHasWildcard3: true = {} as HasWildcard<"zap.zop.*">;
 const testHasNoWildcard: false = {} as HasWildcard<"z*ap.zop.zup">;
 
-const testInferFooHandler: (data: { field: string }, event: "foo") => void = {} as InferSubscriptionHandler<
+const testInferFooListener: (data: { field: string }, event: "foo") => void = {} as InferSubscriptionListener<
   typeof testSchema,
   "foo"
 >;
-const testInferBarBazHandler: InferSubscriptionHandler<typeof testSchema, "bar.baz"> = (
+const testInferBarBazListener: InferSubscriptionListener<typeof testSchema, "bar.baz"> = (
   data: { field: string | number },
   event: "bar.baz"
 ) => {};
-const testInferWildcardHandler: InferSubscriptionHandler<typeof testSchema, "bar.*"> = (
+const testInferWildcardListener: InferSubscriptionListener<typeof testSchema, "bar.*"> = (
   data: unknown,
   event: string
 ) => {};
 
-const testSubscriptionHandlers: {
+const testSubscriptionListeners: {
   foo: (data: { field: string }, event: "foo") => void;
   "*": (data: { field: string }, event: string) => void;
   "bar.baz": (data: { field: string | number }, event: "bar.baz") => void;
@@ -79,7 +79,7 @@ const testSubscriptionHandlers: {
   "*.zop.*": (data: { field: string }, event: string) => void;
   "*.*.zup": (data: { field: string }, event: string) => void;
   "*.*.*": (data: { field: string }, event: string) => void;
-} = {} as MappedSubscriptionHandlers<typeof testSchema>;
+} = {} as MappedSubscriptionListeners<typeof testSchema>;
 
 // PASS
 test.subscribe("zap.*.zup", (data, event) => {

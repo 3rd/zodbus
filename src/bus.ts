@@ -1,6 +1,6 @@
 import { ZodType } from "zod";
 import { ValidationError } from "./errors";
-import type { MappedSubscriptionHandlerPayloads, MappedSubscriptionHandlers, Schema, SchemaPaths } from "./types";
+import type { MappedSubscriptionListenerPayloads, MappedSubscriptionListeners, Schema, SchemaPaths } from "./types";
 import { getSubPubPathMap } from "./utils/schema";
 
 type BusOptions<T extends Schema> = {
@@ -9,15 +9,16 @@ type BusOptions<T extends Schema> = {
 };
 
 function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
-  type SubscriptionHandlers = MappedSubscriptionHandlers<T>;
-  type SubscriptionHandlerPayloads = MappedSubscriptionHandlerPayloads<T>;
-  type SubscriptionKey = Extract<keyof SubscriptionHandlers, string>;
+  type SubscriptionListeners = MappedSubscriptionListeners<T>;
+  type SubscriptionListenerPayloads = MappedSubscriptionListenerPayloads<T>;
+  type SubscriptionKey = Extract<keyof SubscriptionListeners, string>;
   type PublishKey = Extract<SubscriptionKey, SchemaPaths<T>>;
 
   const subPubPathMap = getSubPubPathMap(schema) as Record<SubscriptionKey, PublishKey[]>;
   const listeners: Map<PublishKey, Set<unknown>> = new Map();
 
   const getListenerSetsForSubscriptionKey = (event: SubscriptionKey) => {
+    if (event === "*") return new Set(listeners.values());
     const listenerSets: Set<unknown>[] = [];
     const publishPaths = subPubPathMap[event];
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
@@ -45,10 +46,19 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
   };
 
   /** Unsubscribe from an event. If no listener is provided, all listeners for the event will be removed.
-   * @param event The event to unsubscribe from.
+   * @param event The event to unsubscribe from. Wildcards `foo.*.bar.*` are supported.
+   *   Using `*` will match any event on any level.
+   *   More specific wildcard patterns like `*.*` will only match events on that level.
+   *
+   *   Examples:
+   *   - `unsubscribe("foo.bar", listener)` will unsubscribe the listener from `foo.bar`
+   *   - `unsubscribe("foo.*", listener)` will unsubscribe the listener from all events under `foo`
+   *   - `unsubscribe("*", listener)` will unsubscribe the listener from all events
+   *   - `unsubscribe("*")` will unsubscribe all listeners from all events
+   *   - `unsubscribe("*.*")` will unsubscribe all listeners from all events on the second level
    * @param listener The listener to remove. If no listener is provided, all listeners for the event will be removed.
    */
-  const unsubscribe = <K extends SubscriptionKey>(event: K, listener?: SubscriptionHandlers[K]) => {
+  const unsubscribe = <K extends SubscriptionKey>(event: K, listener?: SubscriptionListeners[K]) => {
     const eventListeners = getListenerSetsForSubscriptionKey(event);
     for (const listenerSet of eventListeners) {
       if (typeof listener === "undefined") {
@@ -60,15 +70,17 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
   };
 
   /** Subscribe to an event. Returns an object with the event name, listener, and an unsubscribe function.
-   * @param event The event to subscribe to. Wildcards "foo.*.bar.*" are supported.
+   * @param event The event to subscribe to. Wildcards `foo.*.bar.*` are supported.
+   *    Using `*` will match any event on any level.
+   *    More specific wildcard patterns like `*.*` will only match events on that level.
    * @param listener The listener to call when the event is published.
    * @returns An object with the event name, listener, and an unsubscribe function.
    */
-  const subscribe = <K extends SubscriptionKey>(event: K, listener: SubscriptionHandlers[K]) => {
+  const subscribe = <K extends SubscriptionKey>(event: K, listener: SubscriptionListeners[K]) => {
     if (typeof listener !== "function") {
       throw new ValidationError(`Invalid listener for event: "${event}". Expected function, got ${typeof listener}`);
     }
-    const publishPaths = subPubPathMap[event];
+    const publishPaths = event === "*" ? (Object.values(subPubPathMap).flat() as PublishKey[]) : subPubPathMap[event];
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
     for (const publishPath of publishPaths) {
       if (!listeners.has(publishPath)) listeners.set(publishPath, new Set());
@@ -78,28 +90,30 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
   };
 
   /** Subscribe to an event once. The listener will be unsubscribed after the first time it is called.
-   * You cannot cancel this subscription using unsubscribe() with the original handler.
-   * Use the returned unsubscribe function / handler instead.
-   * @param event The event to subscribe to. Wildcards "foo.*.bar.*" are supported.
+   * You cannot cancel this subscription using unsubscribe() with the original listener.
+   * Use the returned unsubscribe function / listener instead.
+   * @param event The event to subscribe to. Wildcards `foo.*.bar.*` are supported.
+   *    Using `*` will match any event on any level.
+   *    More specific wildcard patterns like `*.*` will only match events on that level.
    * @param listener The listener to call when the event is published.
    * @returns An object with the event name, listener, and an unsubscribe function.
    * */
-  const subscribeOnce = <K extends SubscriptionKey>(event: K, listener: SubscriptionHandlers[K]) => {
+  const subscribeOnce = <K extends SubscriptionKey>(event: K, listener: SubscriptionListeners[K]) => {
     const wrappedListener = (data: unknown, eventName: string) => {
       listener(data, eventName);
-      unsubscribe(event, wrappedListener as unknown as SubscriptionHandlers[K]);
+      unsubscribe(event, wrappedListener as unknown as SubscriptionListeners[K]);
     };
-    return subscribe(event, wrappedListener as unknown as SubscriptionHandlers[K]);
+    return subscribe(event, wrappedListener as unknown as SubscriptionListeners[K]);
   };
 
   /** Publish an event. All listeners for the event will be called with the provided data.
    * @param event The event to publish.
    * @param data The data to pass to the listeners.*/
-  const publish = <K extends PublishKey>(event: K, data: SubscriptionHandlerPayloads[K]) => {
+  const publish = <K extends PublishKey>(event: K, data: SubscriptionListenerPayloads[K]) => {
     if (validate) validatePayloadOrPanic(event, data);
     if (!listeners.has(event)) return;
     for (const listener of listeners.get(event)!) {
-      (listener as SubscriptionHandlers[K])(data, event);
+      (listener as SubscriptionListeners[K])(data, event);
     }
   };
 
