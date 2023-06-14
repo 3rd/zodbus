@@ -2,7 +2,7 @@ import { ZodType } from "zod";
 
 export type IsZodType<T> = T extends ZodType ? true : false;
 export type IsSchema<T> = T extends Schema ? true : false;
-export type WildcardListener = ({ event, data }: { event: string; data: unknown }) => void;
+export type Listener<P = unknown, K extends string = string> = (data: P, event: K) => void;
 
 export type Schema = { [key: string]: ZodType | Schema };
 
@@ -14,20 +14,44 @@ export type HasWildcard<T extends string> = T extends
   ? true
   : false;
 
-export type InferHandler<T, K> = K extends `${infer Left}.${infer Right}`
+export type InferSubscriptionHandler<
+  T,
+  K extends string,
+  P extends string = ""
+> = K extends `${infer Left}.${infer Right}`
   ? HasWildcard<Left & string> extends true
-    ? WildcardListener
+    ? Listener
     : Left extends keyof T
     ? T[Left] extends Schema
-      ? InferHandler<T[Left], Right>
+      ? InferSubscriptionHandler<T[Left], Right, `${P}${Left}.`>
       : never
     : never
   : K extends keyof T
   ? T[K] extends ZodType<infer O, any, any>
-    ? (arg: O) => void
+    ? Listener<O, `${P}${K}`>
     : never
   : HasWildcard<K & string> extends true
-  ? WildcardListener
+  ? Listener
+  : never;
+
+export type InferSubscriptionHandlerPayload<
+  T,
+  K extends string,
+  P extends string = ""
+> = K extends `${infer Left}.${infer Right}`
+  ? HasWildcard<Left & string> extends true
+    ? unknown
+    : Left extends keyof T
+    ? T[Left] extends Schema
+      ? InferSubscriptionHandlerPayload<T[Left], Right, `${P}${Left}.`>
+      : never
+    : never
+  : K extends keyof T
+  ? T[K] extends ZodType<infer O, any, any>
+    ? O
+    : never
+  : HasWildcard<K & string> extends true
+  ? unknown
   : never;
 
 export type ZodTypePath<T, K extends keyof T = keyof T> = K extends string
@@ -52,6 +76,16 @@ export type ExcludeDirectlyNestedKeys<T extends string> = T extends `${infer L}.
   ? L | ExcludeDirectlyNestedKeys<R>
   : never;
 
-export type MappedHandlers<T extends Schema> = {
-  [K in Exclude<WildcardPaths<SchemaPaths<T>>, ExcludeDirectlyNestedKeys<SchemaPaths<T>>>]: InferHandler<T, K>;
+export type MappedSubscriptionHandlers<T extends Schema> = {
+  [K in Exclude<WildcardPaths<SchemaPaths<T>>, ExcludeDirectlyNestedKeys<SchemaPaths<T>>>]: InferSubscriptionHandler<
+    T,
+    K
+  >;
+};
+
+export type MappedSubscriptionHandlerPayloads<T extends Schema> = {
+  [K in Exclude<
+    WildcardPaths<SchemaPaths<T>>,
+    ExcludeDirectlyNestedKeys<SchemaPaths<T>>
+  >]: InferSubscriptionHandlerPayload<T, K>;
 };

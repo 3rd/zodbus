@@ -30,9 +30,10 @@ describe("bus", () => {
     const bus = create({ schema });
     bus.subscribe("bar.baz", handler);
     bus.subscribe("zap.zop.zup.zip", handler);
-    bus.publish("bar.baz", { field: "test" });
-    bus.publish("zap.zop.zup.zip", { field: "test" });
-    expect(handler).toHaveBeenCalledWith({ field: "test" });
+    bus.publish("bar.baz", { field: "bar-test" });
+    bus.publish("zap.zop.zup.zip", { field: "zap-test" });
+    expect(handler).toHaveBeenCalledWith({ field: "bar-test" }, "bar.baz");
+    expect(handler).toHaveBeenCalledWith({ field: "zap-test" }, "zap.zop.zup.zip");
     expect(handler).toHaveBeenCalledTimes(2);
   });
 
@@ -44,7 +45,7 @@ describe("bus", () => {
     }
     bus.publish("foo", { field: "test" });
     for (const handler of handlers) {
-      expect(handler).toHaveBeenCalledWith({ field: "test" });
+      expect(handler).toHaveBeenCalledWith({ field: "test" }, "foo");
     }
   });
 
@@ -81,9 +82,20 @@ describe("bus", () => {
     }
   });
 
-  // TODO: separate publish keys from subscription keys
-  // TODO: implement wildcards
-  it.skip("subscribes to events with wildcards", () => {
+  it("subscribes to events with wildcards", () => {
+    const defaultHandler = jest.fn();
+    const wildcardHandler = jest.fn();
+    const bus = create({ schema });
+    bus.subscribe("*.zop.zup.zip", defaultHandler);
+    bus.subscribe("zap.zop.zup.*", wildcardHandler);
+    bus.publish("zap.zop.zup.zip", { field: "test" });
+    expect(defaultHandler).toHaveBeenCalledWith({ field: "test" }, "zap.zop.zup.zip");
+    expect(defaultHandler).toHaveBeenCalledTimes(1);
+    expect(wildcardHandler).toHaveBeenCalledWith({ field: "test" }, "zap.zop.zup.zip");
+    expect(wildcardHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it("only calls a handler once if subscribed through multiple wildcard variations", () => {
     const handler = jest.fn();
     const bus = create({ schema });
     bus.subscribe("*", handler);
@@ -93,6 +105,6 @@ describe("bus", () => {
     bus.subscribe("zap.zop.*.zip", handler);
     bus.subscribe("*.zop.zup.*", handler);
     bus.publish("zap.zop.zup.zip", { field: "test" });
-    expect(handler).toHaveBeenCalledTimes(6);
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 });
