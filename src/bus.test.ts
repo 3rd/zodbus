@@ -72,15 +72,61 @@ describe("bus", () => {
   it("unsubscribes all handlers from an event", () => {
     const handlers = [jest.fn(), jest.fn()];
     const bus = create({ schema });
+
     for (const handler of handlers) {
       bus.subscribe("foo", handler);
     }
+    expect(bus.getListeners("foo")).toHaveLength(2);
+
     bus.publish("foo", { field: "test" });
+
     bus.unsubscribe("foo");
+    expect(bus.getListeners("foo")).toHaveLength(0);
+
     bus.publish("foo", { field: "test" });
     for (const handler of handlers) {
       expect(handler).toHaveBeenCalledTimes(1);
     }
+  });
+
+  it("returns the listeners for an event", () => {
+    const handlers = [jest.fn(), jest.fn()];
+    const bus = create({ schema });
+    for (const handler of handlers) {
+      bus.subscribe("foo", handler);
+    }
+    expect(bus.getListeners("foo")).toHaveLength(2);
+    expect(bus.getListeners("foo")).toEqual(handlers);
+  });
+
+  it("returns all the listeners if the event is omitted", () => {
+    const handlers = [jest.fn(), jest.fn()];
+    const bus = create({ schema });
+    for (const handler of handlers) {
+      bus.subscribe("foo", handler);
+    }
+    expect(bus.getListeners()).toHaveLength(2);
+    expect(bus.getListeners()).toEqual(handlers);
+  });
+
+  it("returns the listeners for an event with wildcards", () => {
+    const events = ["bar.*", "*.baz", "*.*"] as const;
+    const handlers = events.map(() => jest.fn());
+    const bus = create({ schema });
+    for (const [index, event] of events.entries()) {
+      bus.subscribe(event, handlers[index]);
+    }
+    expect(bus.getListeners("bar.baz")).toHaveLength(3);
+    expect(bus.getListeners("bar.baz")).toEqual(handlers);
+    for (const event of events) {
+      expect(bus.getListeners(event)).toEqual(handlers);
+    }
+  });
+
+  it("throws and error when trying to retrieve the listeners for an unknown event", () => {
+    const bus = create({ schema });
+    // @ts-expect-error
+    expect(() => bus.getListeners("unknown")).toThrowError(`${errorPrefix}Invalid event: "unknown"`);
   });
 
   it("subscribes to events with wildcards", () => {
@@ -124,6 +170,7 @@ describe("bus", () => {
     bus.subscribe("zap.zop.*.zip", handler);
     bus.subscribe("*.zop.zup.*", handler);
     bus.publish("zap.zop.zup.zip", { field: "test" });
+    expect(bus.getListeners("zap.zop.zup.zip")).toHaveLength(1);
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
@@ -161,5 +208,15 @@ describe("bus", () => {
       // @ts-expect-error
       expect(() => bus.publish("foo", { field: 1 })).not.toThrowError();
     });
+  });
+
+  it("returns the listener map", () => {
+    const handler = jest.fn();
+    const bus = create({ schema });
+
+    expect(bus.listeners).toEqual(new Map());
+
+    bus.subscribe("zap.*.*.zip", handler);
+    expect(bus.listeners).toEqual(new Map([["zap.zop.zup.zip", new Set([handler])]]));
   });
 });

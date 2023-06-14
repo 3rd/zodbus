@@ -62,6 +62,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
   /** Subscribe to an event. Returns an object with the event name, listener, and an unsubscribe function.
    * @param event The event to subscribe to. Wildcards "foo.*.bar.*" are supported.
    * @param listener The listener to call when the event is published.
+   * @returns An object with the event name, listener, and an unsubscribe function.
    */
   const subscribe = <K extends SubscriptionKey>(event: K, listener: SubscriptionHandlers[K]) => {
     if (typeof listener !== "function") {
@@ -78,7 +79,11 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
 
   /** Subscribe to an event once. The listener will be unsubscribed after the first time it is called.
    * You cannot cancel this subscription using unsubscribe() with the original handler.
-   * Use the returned unsubscribe function / handler instead. */
+   * Use the returned unsubscribe function / handler instead.
+   * @param event The event to subscribe to. Wildcards "foo.*.bar.*" are supported.
+   * @param listener The listener to call when the event is published.
+   * @returns An object with the event name, listener, and an unsubscribe function.
+   * */
   const subscribeOnce = <K extends SubscriptionKey>(event: K, listener: SubscriptionHandlers[K]) => {
     const wrappedListener = (data: unknown, eventName: string) => {
       listener(data, eventName);
@@ -98,12 +103,27 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
     }
   };
 
+  /** Get the list of listeners for an event or all listeners if no event is provided.
+   * @param event The event to get listeners for.
+   * @returns An array of listeners for the event. */
+  const getListeners = <K extends SubscriptionKey>(event?: K) => {
+    const targetListeners: ((data: unknown, eventName: string) => void)[] = [];
+    const targetListenerSets = event ? getListenerSetsForSubscriptionKey(event) : Array.from(listeners.values());
+    for (const listenerSet of targetListenerSets) {
+      for (const listener of listenerSet) {
+        targetListeners.push(listener as (data: unknown, eventName: string) => void);
+      }
+    }
+    return targetListeners;
+  };
+
   return {
-    listeners,
     publish,
     subscribe,
     subscribeOnce,
     unsubscribe,
+    getListeners,
+    listeners,
   };
 }
 
