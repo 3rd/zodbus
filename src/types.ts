@@ -6,11 +6,7 @@ export type Listener<P = unknown, K extends string = string> = (data: P, event: 
 
 export type Schema = { [key: string]: ZodType | Schema };
 
-export type HasWildcard<T extends string> = T extends
-  | `*`
-  | `*.${infer _End}`
-  | `${infer _Start}.*.${infer _End}`
-  | `${infer _Start}.*`
+export type HasWildcard<T extends string> = T extends `*` | `*.${string}` | `${string}.*.${string}` | `${string}.*`
   ? true
   : false;
 

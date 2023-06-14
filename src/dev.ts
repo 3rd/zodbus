@@ -40,10 +40,12 @@ const testWildcardPaths:
   | "*.zop.*"
   | "*.*.zup" = {} as WildcardPath<SchemaPath<typeof testSchema>>;
 
-const testHasWildcard: true = {} as HasWildcard<"*.zop.zup">;
-const testHasWildcard2: true = {} as HasWildcard<"zap.*.zup">;
-const testHasWildcard3: true = {} as HasWildcard<"zap.zop.*">;
+const testHasWildcard: true = {} as HasWildcard<"*">;
+const testHasWildcard2: true = {} as HasWildcard<"*.zop.zup">;
+const testHasWildcard3: true = {} as HasWildcard<"zap.*.zup">;
+const testHasWildcard4: true = {} as HasWildcard<"zap.zop.*">;
 const testHasNoWildcard: false = {} as HasWildcard<"z*ap.zop.zup">;
+const testHasNoWildcard2: false = {} as HasWildcard<"**.**">;
 
 const testInferFooListener: (data: { field: string }, event: "foo") => void = {} as InferSubscriptionListener<
   typeof testSchema,
