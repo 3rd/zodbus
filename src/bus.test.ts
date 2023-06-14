@@ -83,6 +83,18 @@ describe("bus", () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  it("unsubscribes a listener using the returned subscription only for the initial event", () => {
+    const listener = jest.fn();
+    const bus = create({ schema });
+    const subscription = bus.subscribe("foo", listener);
+    bus.subscribe("bar.baz", listener);
+    expect(bus.getListeners("foo")).toHaveLength(1);
+    expect(bus.getListeners("bar.baz")).toHaveLength(1);
+    subscription.unsubscribe();
+    expect(bus.getListeners("foo")).toHaveLength(0);
+    expect(bus.getListeners("bar.baz")).toHaveLength(1);
+  });
+
   it("unsubscribes all listeners from an event", () => {
     const listeners = [jest.fn(), jest.fn()];
     const bus = create({ schema });
