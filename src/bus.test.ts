@@ -51,12 +51,26 @@ describe("bus", () => {
   });
 
   it("subscribes a listener to an event and calls it once", () => {
-    const listener = jest.fn();
     const bus = create({ schema });
-    bus.subscribeOnce("foo", listener);
-    bus.publish("foo", { field: "test" });
-    bus.publish("foo", { field: "test" });
-    expect(listener).toHaveBeenCalledTimes(1);
+
+    // without other subscriptions
+    {
+      const listener = jest.fn();
+      bus.subscribeOnce("foo", listener);
+      bus.publish("foo", { field: "test" });
+      bus.publish("foo", { field: "test" });
+      expect(listener).toHaveBeenCalledTimes(1);
+    }
+
+    // with other subscriptions
+    {
+      const listener = jest.fn();
+      bus.subscribe("foo", listener);
+      bus.subscribeOnce("foo", listener);
+      bus.publish("foo", { field: "test" });
+      bus.publish("foo", { field: "test" });
+      expect(listener).toHaveBeenCalledTimes(3);
+    }
   });
 
   it("unsubscribes a listener from an event", () => {
