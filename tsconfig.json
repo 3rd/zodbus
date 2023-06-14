@@ -7,6 +7,5 @@
     "declaration": true,
     "outDir": "dist"
   },
-  "include": ["src"],
-  "exclude": ["src/dev.ts"]
+  "include": ["src"]
 }
