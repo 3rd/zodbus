@@ -1,6 +1,6 @@
 import { ZodType } from "zod";
 import { RuntimeError, ValidationError } from "./errors";
-import type { MappedSubscriptionListenerPayloads, MappedSubscriptionListeners, Schema, SchemaPaths } from "./types";
+import type { PublishKey, Schema, SubscriptionKey, SubscriptionListenerPayloads, SubscriptionListeners } from "./types";
 import { getSubPubPathMap } from "./utils/schema";
 
 type BusOptions<T extends Schema> = {
@@ -9,15 +9,11 @@ type BusOptions<T extends Schema> = {
 };
 
 function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
-  type SubscriptionListeners = MappedSubscriptionListeners<T>;
-  type SubscriptionListenerPayloads = MappedSubscriptionListenerPayloads<T>;
-  type SubscriptionKey = Extract<keyof SubscriptionListeners, string>;
-  type PublishKey = Extract<SubscriptionKey, SchemaPaths<T>>;
+  const subPubPathMap = getSubPubPathMap(schema) as Record<SubscriptionKey<T>, PublishKey<T>[]>;
+  const eventNames = Array.from(new Set(Object.values(subPubPathMap).flat())) as PublishKey<T>[];
+  const listeners: Map<PublishKey<T>, Set<unknown>> = new Map();
 
-  const subPubPathMap = getSubPubPathMap(schema) as Record<SubscriptionKey, PublishKey[]>;
-  const listeners: Map<PublishKey, Set<unknown>> = new Map();
-
-  const getListenerSetsForSubscriptionKey = (event: SubscriptionKey) => {
+  const getListenerSetsForSubscriptionKey = (event: SubscriptionKey<T>) => {
     if (event === "*") return new Set(listeners.values());
     const listenerSets: Set<unknown>[] = [];
     const publishPaths = subPubPathMap[event];
@@ -58,7 +54,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
    *   - `unsubscribe("*.*")` will unsubscribe all listeners from all events on the second level
    * @param listener The listener to remove. If no listener is provided, all listeners for the event will be removed.
    */
-  const unsubscribe = <K extends SubscriptionKey>(event: K, listener?: SubscriptionListeners[K]) => {
+  const unsubscribe = <K extends SubscriptionKey<T>>(event: K, listener?: SubscriptionListeners<T>[K]) => {
     const eventListeners = getListenerSetsForSubscriptionKey(event);
     for (const listenerSet of eventListeners) {
       if (typeof listener === "undefined") {
@@ -74,13 +70,13 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
    *    Using `*` will match any event on any level.
    *    More specific wildcard patterns like `*.*` will only match events on that level.
    * @param listener The listener to call when the event is published.
-   * @returns An object with the event name, listener, and an unsubscribe function.
+   * @returns A subscription object with the event name, listener, and an unsubscribe function.
    */
-  const subscribe = <K extends SubscriptionKey>(event: K, listener: SubscriptionListeners[K]) => {
+  const subscribe = <K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]) => {
     if (typeof listener !== "function") {
       throw new ValidationError(`Invalid listener for event: "${event}". Expected function, got ${typeof listener}`);
     }
-    const publishPaths = event === "*" ? (Object.values(subPubPathMap).flat() as PublishKey[]) : subPubPathMap[event];
+    const publishPaths = event === "*" ? eventNames : subPubPathMap[event];
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
     for (const publishPath of publishPaths) {
       if (!listeners.has(publishPath)) listeners.set(publishPath, new Set());
@@ -96,31 +92,31 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
    *    Using `*` will match any event on any level.
    *    More specific wildcard patterns like `*.*` will only match events on that level.
    * @param listener The listener to call when the event is published.
-   * @returns An object with the event name, listener, and an unsubscribe function.
+   * @returns A subscription object with the event name, listener, and an unsubscribe function.
    * */
-  const subscribeOnce = <K extends SubscriptionKey>(event: K, listener: SubscriptionListeners[K]) => {
+  const subscribeOnce = <K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]) => {
     const wrappedListener = (data: unknown, eventName: string) => {
       listener(data, eventName);
-      unsubscribe(event, wrappedListener as unknown as SubscriptionListeners[K]);
+      unsubscribe(event, wrappedListener as unknown as SubscriptionListeners<T>[K]);
     };
-    return subscribe(event, wrappedListener as unknown as SubscriptionListeners[K]);
+    return subscribe(event, wrappedListener as unknown as SubscriptionListeners<T>[K]);
   };
 
   /** Publish an event. All listeners for the event will be called with the provided data.
    * @param event The event to publish.
    * @param data The data to pass to the listeners.*/
-  const publish = <K extends PublishKey>(event: K, data: SubscriptionListenerPayloads[K]) => {
+  const publish = <K extends PublishKey<T>>(event: K, data: SubscriptionListenerPayloads<T>[K]) => {
     if (validate) validatePayloadOrPanic(event, data);
     if (!listeners.has(event)) return;
     for (const listener of listeners.get(event)!) {
-      (listener as SubscriptionListeners[K])(data, event);
+      (listener as SubscriptionListeners<T>[K])(data, event);
     }
   };
 
   /** Get the list of listeners for an event or all listeners if no event is provided.
    * @param event The event to get listeners for.
    * @returns An array of listeners for the event. */
-  const getListeners = <K extends SubscriptionKey>(event?: K) => {
+  const getListeners = <K extends SubscriptionKey<T>>(event?: K) => {
     const targetListeners: ((data: unknown, eventName: string) => void)[] = [];
     const targetListenerSets = event ? getListenerSetsForSubscriptionKey(event) : Array.from(listeners.values());
     for (const listenerSet of targetListenerSets) {
@@ -137,34 +133,39 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
    * @param options.timeout The timeout in milliseconds. Defaults to 10000.
    * @param options.filter A function that returns true if the event should be accepted.
    * @returns A promise that resolves when the event is published with the data passed to the listener. */
-  const waitFor = <K extends SubscriptionKey>(
+  const waitFor = <K extends SubscriptionKey<T>>(
     event: K,
-    options: { timeout?: number; filter?: (data: SubscriptionListenerPayloads[K]) => boolean } = {}
+    options: { timeout?: number; filter?: (data: SubscriptionListenerPayloads<T>[K]) => boolean } = {}
   ) => {
     const { timeout = 5_000, filter } = options;
-    return new Promise<SubscriptionListenerPayloads[K]>((resolve, reject) => {
+    return new Promise<SubscriptionListenerPayloads<T>[K]>((resolve, reject) => {
       let timeoutId: ReturnType<typeof setTimeout>;
       const listener = (data: unknown) => {
-        if (filter && !filter(data as SubscriptionListenerPayloads[K])) return;
-        unsubscribe(event, listener as unknown as SubscriptionListeners[K]);
-        resolve(data as SubscriptionListenerPayloads[K]);
+        if (filter && !filter(data as SubscriptionListenerPayloads<T>[K])) return;
+        unsubscribe(event, listener as unknown as SubscriptionListeners<T>[K]);
+        resolve(data as SubscriptionListenerPayloads<T>[K]);
         clearTimeout(timeoutId);
       };
-      subscribe(event, listener as unknown as SubscriptionListeners[K]);
+      subscribe(event, listener as unknown as SubscriptionListeners<T>[K]);
       if (timeout) {
         timeoutId = setTimeout(() => {
-          unsubscribe(event, listener as unknown as SubscriptionListeners[K]);
+          unsubscribe(event, listener as unknown as SubscriptionListeners<T>[K]);
           reject(new RuntimeError(`Timeout waiting for event: "${event}"`));
         }, timeout);
       }
     });
   };
 
+  /** Returns a list of all the event names.
+   * @returns An array of event names. */
+  const getEventNames = () => eventNames;
+
   return {
     publish,
     subscribe,
     subscribeOnce,
     unsubscribe,
+    getEventNames,
     getListeners,
     waitFor,
   };

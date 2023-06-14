@@ -89,3 +89,8 @@ export type MappedSubscriptionListenerPayloads<T extends Schema> = {
     ExcludeDirectlyNestedKeys<SchemaPaths<T>>
   >]: InferSubscriptionListenerPayload<T, K>;
 };
+
+export type SubscriptionListeners<T extends Schema> = MappedSubscriptionListeners<T>;
+export type SubscriptionListenerPayloads<T extends Schema> = MappedSubscriptionListenerPayloads<T>;
+export type SubscriptionKey<T extends Schema> = Extract<keyof SubscriptionListeners<T>, string>;
+export type PublishKey<T extends Schema> = Extract<SubscriptionKey<T>, SchemaPaths<T>>;

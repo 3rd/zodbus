@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { z } from "zod";
 import type {
   HasWildcard,
   InferSubscriptionListener,
@@ -6,7 +7,6 @@ import type {
   SchemaPaths,
   WildcardPaths,
 } from "./types";
-import { z } from "zod";
 import { create } from ".";
 
 const testSchema = {
