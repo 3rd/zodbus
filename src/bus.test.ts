@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { create } from "./bus";
+import { errorPrefix } from "./constants";
 
 const schema = {
   foo: z.object({ field: z.string() }),
@@ -124,5 +125,41 @@ describe("bus", () => {
     bus.subscribe("*.zop.zup.*", handler);
     bus.publish("zap.zop.zup.zip", { field: "test" });
     expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws an error if an event is subscribed to that does not match the schema", () => {
+    const bus = create({ schema });
+    // @ts-expect-error
+    expect(() => bus.subscribe("unknown", jest.fn())).toThrowError(`${errorPrefix}Invalid event: "unknown"`);
+  });
+
+  describe("when schema validation is enabled", () => {
+    it("throws an error if an event is published that does not match the schema", () => {
+      const bus = create({ schema });
+      // @ts-expect-error
+      expect(() => bus.publish("foo", { field: 1 })).toThrowError(
+        JSON.stringify(
+          [
+            {
+              code: "invalid_type",
+              expected: "string",
+              received: "number",
+              path: ["field"],
+              message: "Expected string, received number",
+            },
+          ],
+          null,
+          2
+        )
+      );
+    });
+  });
+
+  describe("when schema validation is disabled", () => {
+    it("does not throw an error if an event is published that does not match the schema", () => {
+      const bus = create({ schema, validate: false });
+      // @ts-expect-error
+      expect(() => bus.publish("foo", { field: 1 })).not.toThrowError();
+    });
   });
 });
