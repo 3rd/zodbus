@@ -8,7 +8,8 @@
     "checkJs": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noImplicitAny": false
   },
   "include": ["tests"]
 }

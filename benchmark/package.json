@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "benchmark": "find ./tests -name '*.js' -exec node {} \\;"
+    "benchmark": "node runner/index.mjs"
   },
   "keywords": [],
   "author": "",
