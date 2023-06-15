@@ -1,0 +1,21 @@
+{
+  "name": "benchmark",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "benchmark": "find ./tests -name '*.js' -exec node {} \\;"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tinybench": "^2.5.0"
+  },
+  "dependencies": {
+    "mitt": "^3.0.0",
+    "tseep": "^1.1.1",
+    "zod": "^3.21.4",
+    "zodbus": "link:.."
+  }
+}

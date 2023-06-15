@@ -1,0 +1,45 @@
+lockfileVersion: "6.1"
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  mitt:
+    specifier: ^3.0.0
+    version: 3.0.0
+  tseep:
+    specifier: ^1.1.1
+    version: 1.1.1
+  zod:
+    specifier: ^3.21.4
+    version: 3.21.4
+  zodbus:
+    specifier: link:..
+    version: link:..
+
+devDependencies:
+  tinybench:
+    specifier: ^2.5.0
+    version: 2.5.0
+
+packages:
+  /mitt@3.0.0:
+    resolution:
+      { integrity: sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ== }
+    dev: false
+
+  /tinybench@2.5.0:
+    resolution:
+      { integrity: sha512-kRwSG8Zx4tjF9ZiyH4bhaebu+EDz1BOx9hOigYHlUW4xxI/wKIUQUqo018UlU4ar6ATPBsaMrdbKZ+tmPdohFA== }
+    dev: true
+
+  /tseep@1.1.1:
+    resolution:
+      { integrity: sha512-w2MjaqNWGDeliT5/W+/lhhnR0URiVwXXsXbkAZjQVywrOpdKhQAOL1ycyHfNOV1QBjouC7FawNmJePet1sGesw== }
+    dev: false
+
+  /zod@3.21.4:
+    resolution:
+      { integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw== }
+    dev: false
