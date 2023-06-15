@@ -26,8 +26,7 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && node src/scripts/build.mjs",
-    "postbuild": "tsc -p tsconfig.build.json",
+    "build": "npm run clean && node src/scripts/build.mjs && tsc -p tsconfig.build.json",
     "test": "jest",
     "tsc": "tsc",
     "benchmark": "cd benchmark && npm run benchmark",
