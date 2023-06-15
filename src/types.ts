@@ -2,9 +2,11 @@ import { ZodType } from "zod";
 
 export type IsZodType<T> = T extends ZodType ? true : false;
 export type IsSchema<T> = T extends Schema ? true : false;
-export type Listener<P = unknown, K extends string = string> = (data: P, event: K) => void;
+export type Listener<K extends string = string, V = unknown> = (data: V, event: K) => void;
 
-export type Schema = { [key: string]: ZodType | Schema };
+export interface Schema {
+  [key: string]: ZodType | Schema;
+}
 
 export type HasWildcard<T extends string> = T extends `*` | `*.${string}` | `${string}.*.${string}` | `${string}.*`
   ? true
@@ -24,7 +26,7 @@ export type InferSubscriptionListener<
     : never
   : K extends keyof T
   ? T[K] extends ZodType<infer O, any, any>
-    ? Listener<O, `${P}${K}`>
+    ? Listener<`${P}${K}`, O>
     : never
   : HasWildcard<K & string> extends true
   ? Listener
@@ -63,27 +65,30 @@ export type NamespacePath<T, K extends keyof T = keyof T> = K extends string
 export type SchemaPath<T, K extends keyof T = keyof T> = ZodTypePath<T, K> | NamespacePath<T, K>;
 
 export type WildcardPath<T extends string> = T extends `${infer L}.${infer R}`
-  ? IsZodType<L> extends true
-    ? `${L}.${WildcardPath<R>}` | `${L}.*`
-    : `${L}.${WildcardPath<R>}` | `${L}.*` | `*.${WildcardPath<R>}`
+  ? `${L}.${WildcardPath<R>}` | `${L}.*` | `*.${WildcardPath<R>}`
   : T | "*";
 
 export type ExcludeDirectlyNestedKeys<T extends string> = T extends `${infer L}.${infer R}`
   ? L | ExcludeDirectlyNestedKeys<R>
   : never;
 
+export type Subscription<T extends Schema> = {
+  [K in Exclude<WildcardPath<SchemaPath<T>>, ExcludeDirectlyNestedKeys<SchemaPath<T>>>]: {
+    listener: InferSubscriptionListener<T, K>;
+    payload: InferSubscriptionListenerPayload<T, K>;
+  };
+};
+
+export type Subscriptions<T extends Schema> = {
+  [K in keyof Subscription<T>]: Subscription<T>[K];
+};
+
 export type SubscriptionListeners<T extends Schema> = {
-  [K in Exclude<WildcardPath<SchemaPath<T>>, ExcludeDirectlyNestedKeys<SchemaPath<T>>>]: InferSubscriptionListener<
-    T,
-    K
-  >;
+  [K in keyof Subscriptions<T>]: Subscriptions<T>[K]["listener"];
 };
 
 export type SubscriptionListenerPayloads<T extends Schema> = {
-  [K in Exclude<
-    WildcardPath<SchemaPath<T>>,
-    ExcludeDirectlyNestedKeys<SchemaPath<T>>
-  >]: InferSubscriptionListenerPayload<T, K>;
+  [K in keyof Subscriptions<T>]: Subscriptions<T>[K]["payload"];
 };
 
 export type SubscriptionKey<T extends Schema> = Extract<keyof SubscriptionListeners<T>, string>;

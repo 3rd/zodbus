@@ -8,13 +8,32 @@ type BusOptions<T extends Schema> = {
   validate?: boolean;
 };
 
-function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
+interface Bus<T extends Schema> {
+  publish: <K extends PublishKey<T>>(event: K, data: SubscriptionListenerPayloads<T>[K]) => void;
+  subscribe: <K extends SubscriptionKey<T>>(
+    event: K,
+    listener: SubscriptionListeners<T>[K]
+  ) => { event: K; listener: SubscriptionListeners<T>[K]; unsubscribe: () => void };
+  subscribeOnce: <K extends SubscriptionKey<T>>(
+    event: K,
+    listener: SubscriptionListeners<T>[K]
+  ) => { event: K; listener: SubscriptionListeners<T>[K]; unsubscribe: () => void };
+  unsubscribe: <K extends SubscriptionKey<T>>(event: K, listener?: SubscriptionListeners<T>[K]) => void;
+  getEventNames: () => string[];
+  getListeners: <K extends SubscriptionKey<T>>(event?: K) => ((data: unknown, eventName: string) => void)[];
+  waitFor: <K extends SubscriptionKey<T>>(
+    event: K,
+    options?: { timeout?: number; filter?: (data: SubscriptionListenerPayloads<T>[K]) => boolean }
+  ) => Promise<SubscriptionListenerPayloads<T>[K]>;
+}
+
+function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): Bus<T> {
   const subPubPathMap = getSubPubPathMap(schema) as Record<SubscriptionKey<T>, PublishKey<T>[]>;
   const eventNames = Array.from(new Set(Object.values(subPubPathMap).flat())) as PublishKey<T>[];
   const listeners: Map<PublishKey<T>, Set<unknown>> = new Map();
 
-  const getListenerSetsForSubscriptionKey = (event: SubscriptionKey<T>) => {
-    if (event === "*") return new Set(listeners.values());
+  const getListenerSetsForSubscriptionKey = (event: SubscriptionKey<T>): Set<unknown>[] => {
+    if (event === "*") return Array.from(listeners.values());
     const listenerSets: Set<unknown>[] = [];
     const publishPaths = subPubPathMap[event];
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
@@ -45,6 +64,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
    * @param event The event to unsubscribe from. Wildcards `foo.*.bar.*` are supported.
    *   Using `*` will match any event on any level.
    *   More specific wildcard patterns like `*.*` will only match events on that level.
+   * @param listener The listener to remove. If no listener is provided, all listeners for the event will be removed.
    *
    *   Examples:
    *   - `unsubscribe("foo.bar", listener)` will unsubscribe the listener from `foo.bar`
@@ -52,9 +72,8 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
    *   - `unsubscribe("*", listener)` will unsubscribe the listener from all events
    *   - `unsubscribe("*")` will unsubscribe all listeners from all events
    *   - `unsubscribe("*.*")` will unsubscribe all listeners from all events on the second level
-   * @param listener The listener to remove. If no listener is provided, all listeners for the event will be removed.
    */
-  const unsubscribe = <K extends SubscriptionKey<T>>(event: K, listener?: SubscriptionListeners<T>[K]) => {
+  const unsubscribe = <K extends SubscriptionKey<T>>(event: K, listener?: SubscriptionListeners<T>[K]): void => {
     const eventListeners = getListenerSetsForSubscriptionKey(event);
     for (const listenerSet of eventListeners) {
       if (typeof listener === "undefined") {
@@ -72,7 +91,14 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
    * @param listener The listener to call when the event is published.
    * @returns A subscription object with the event name, listener, and an unsubscribe function.
    */
-  const subscribe = <K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]) => {
+  const subscribe = <K extends SubscriptionKey<T>>(
+    event: K,
+    listener: SubscriptionListeners<T>[K]
+  ): {
+    event: K;
+    listener: SubscriptionListeners<T>[K];
+    unsubscribe: () => void;
+  } => {
     if (typeof listener !== "function") {
       throw new ValidationError(`Invalid listener for event: "${event}". Expected function, got ${typeof listener}`);
     }
@@ -112,6 +138,10 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
       (listener as SubscriptionListeners<T>[K])(data, event);
     }
   };
+
+  /** Returns a list of all the event names.
+   * @returns An array of event names. */
+  const getEventNames = () => eventNames;
 
   /** Get the list of listeners for an event or all listeners if no event is provided.
    * @param event The event to get listeners for.
@@ -155,10 +185,6 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>) {
       }
     });
   };
-
-  /** Returns a list of all the event names.
-   * @returns An array of event names. */
-  const getEventNames = () => eventNames;
 
   return {
     publish,

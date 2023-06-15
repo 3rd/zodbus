@@ -17,7 +17,7 @@ const testSchema = {
 const test = create({ schema: testSchema });
 
 type DebugSchemaPath = SchemaPath<typeof testSchema>;
-type DebugWildcardPath = WildcardPath<SchemaPath<typeof testSchema>>;
+type DebugWildcardPath = WildcardPath<DebugSchemaPath>;
 type DebugHasWildcard = HasWildcard<"zap.*.zup">;
 type DebugInferListener = InferSubscriptionListener<typeof testSchema, "bar.baz">;
 type DebugSubscriptionListeners = SubscriptionListeners<typeof testSchema>;
@@ -62,19 +62,19 @@ const testInferWildcardListener: InferSubscriptionListener<typeof testSchema, "b
 
 const testSubscriptionListeners: {
   foo: (data: { field: string }, event: "foo") => void;
-  "*": (data: { field: string }, event: string) => void;
+  "*": (data: unknown, event: string) => void;
   "bar.baz": (data: { field: string | number }, event: "bar.baz") => void;
-  "bar.*": (data: { field: string | number }, event: string) => void;
-  "*.baz": (data: { field: string | number }, event: string) => void;
-  "*.*": (data: { field: string | number }, event: string) => void;
+  "bar.*": (data: unknown, event: string) => void;
+  "*.baz": (data: unknown, event: string) => void;
+  "*.*": (data: unknown, event: string) => void;
   "zap.zop.zup": (data: { field: string }, event: "zap.zop.zup") => void;
-  "zap.zop.*": (data: { field: string }, event: string) => void;
-  "zap.*.zup": (data: { field: string }, event: string) => void;
-  "zap.*.*": (data: { field: string }, event: string) => void;
-  "*.zop.zup": (data: { field: string }, event: string) => void;
-  "*.zop.*": (data: { field: string }, event: string) => void;
-  "*.*.zup": (data: { field: string }, event: string) => void;
-  "*.*.*": (data: { field: string }, event: string) => void;
+  "zap.zop.*": (data: unknown, event: string) => void;
+  "zap.*.zup": (data: unknown, event: string) => void;
+  "zap.*.*": (data: unknown, event: string) => void;
+  "*.zop.zup": (data: unknown, event: string) => void;
+  "*.zop.*": (data: unknown, event: string) => void;
+  "*.*.zup": (data: unknown, event: string) => void;
+  "*.*.*": (data: unknown, event: string) => void;
 } = {} as SubscriptionListeners<typeof testSchema>;
 
 // PASS
