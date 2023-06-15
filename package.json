@@ -14,11 +14,16 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
   "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "build": "node src/scripts/build.mjs",
+    "build": "npm run clean && node src/scripts/build.mjs",
+    "postbuild": "tsc -p tsconfig.build.json",
     "test": "jest",
     "tsc": "tsc",
     "prepare": "husky install",

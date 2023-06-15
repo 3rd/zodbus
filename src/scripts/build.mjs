@@ -6,15 +6,16 @@ const shared = {
   bundle: true,
   minify: true,
   sourcemap: true,
+  platform: "neutral",
 };
 
 await esbuild.build({
   ...shared,
-  outfile: "dist/index.js",
+  outfile: "dist/index.mjs",
 });
 
 await esbuild.build({
   ...shared,
-  outfile: "dist/index.esm.js",
-  format: "esm",
+  outfile: "dist/index.cjs",
+  format: "cjs",
 });
