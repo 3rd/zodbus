@@ -13,6 +13,7 @@
     "tinybench": "^2.5.0"
   },
   "dependencies": {
+    "benchmark": "^2.1.4",
     "mitt": "^3.0.0",
     "tseep": "^1.1.1",
     "zod": "^3.21.4",

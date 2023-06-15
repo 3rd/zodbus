@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  benchmark:
+    specifier: ^2.1.4
+    version: 2.1.4
   mitt:
     specifier: ^3.0.0
     version: 3.0.0
@@ -24,9 +27,27 @@ devDependencies:
     version: 2.5.0
 
 packages:
+  /benchmark@2.1.4:
+    resolution:
+      { integrity: sha512-l9MlfN4M1K/H2fbhfMy3B7vJd6AGKJVQn2h6Sg/Yx+KckoUA7ewS5Vv6TjSq18ooE1kS9hhAlQRH3AkXIh/aOQ== }
+    dependencies:
+      lodash: 4.17.21
+      platform: 1.3.6
+    dev: false
+
+  /lodash@4.17.21:
+    resolution:
+      { integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg== }
+    dev: false
+
   /mitt@3.0.0:
     resolution:
       { integrity: sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ== }
+    dev: false
+
+  /platform@1.3.6:
+    resolution:
+      { integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg== }
     dev: false
 
   /tinybench@2.5.0:
