@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/3rd/zodbus/compare/v1.0.2...v1.0.3) (2023-06-15)
+
+### Bug Fixes
+
+- move README.md to the right place ([dbc03d3](https://github.com/3rd/zodbus/commit/dbc03d3eefb21766c2d1dd53e46e898859123f96))
+
 ## [1.0.2](https://github.com/3rd/zodbus/compare/v1.0.1...v1.0.2) (2023-06-15)
 
 ### Bug Fixes
