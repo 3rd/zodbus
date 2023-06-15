@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/3rd/zodbus/compare/v1.0.1...v1.0.2) (2023-06-15)
+
+### Bug Fixes
+
+- always include "\*" as a valid subscription key ([787c2e6](https://github.com/3rd/zodbus/commit/787c2e6998bc7af8972a36aeaf0dd28632c6c8ca))
+
 ## [1.0.1](https://github.com/3rd/zodbus/compare/v1.0.0...v1.0.1) (2023-06-15)
 
 ### Bug Fixes
