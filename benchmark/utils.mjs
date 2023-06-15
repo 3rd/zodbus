@@ -1,15 +1,24 @@
 const MAX_ASSERT_ERROR_DATA_LENGTH = 100;
 
+const stringiTrimify = (data) => {
+  const stringified = JSON.stringify(data, null, 2);
+  return stringified.substring(0, MAX_ASSERT_ERROR_DATA_LENGTH);
+};
+
 export const assert = (actual, expected, message = "Assertion failed") => {
-  const stringifiedActual = JSON.stringify(actual, null, 2);
-  const stringifiedExpected = JSON.stringify(expected, null, 2);
-  if (stringifiedActual !== stringifiedExpected) {
-    throw new Error(
-      `${message}\n  Expected:\n ${stringifiedExpected.substring(
-        0,
-        MAX_ASSERT_ERROR_DATA_LENGTH
-      )}\n  Actual:\n ${stringifiedActual.substring(0, MAX_ASSERT_ERROR_DATA_LENGTH)}`
-    );
+  const expectedEntries = Array.from(expected.entries());
+  const actualEntries = Array.from(actual.entries());
+
+  for (let i = 0; i < expectedEntries.length; i++) {
+    const [key, expectedValue] = expectedEntries[i];
+    const actualValue = actualEntries[i][1];
+    if (JSON.stringify(expectedValue.data) !== JSON.stringify(actualValue.data)) {
+      throw new Error(
+        `${message}\n  Expected ${key} to be called with ${stringiTrimify(
+          expectedValue.data
+        )}, but was called with ${stringiTrimify(actualValue.data)}`
+      );
+    }
   }
 };
 
@@ -31,11 +40,7 @@ export const createAssertableListenerStore = (implementations) => {
     const implementationCalls = Array.from(callMap.entries());
     const expected = implementationCalls[0][1];
     for (const [implementationName, calls] of implementationCalls) {
-      assert(
-        Array.from(calls.values()).map((d) => d.data),
-        Array.from(expected.values()).map((d) => d.data),
-        `Implementation ${implementationName} called with unexpected arguments`
-      );
+      assert(calls, expected, `Implementation ${implementationName} called with unexpected arguments`);
     }
   };
 

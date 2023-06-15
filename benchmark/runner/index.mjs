@@ -2,11 +2,26 @@ import { Bench } from "tinybench";
 import { create } from "zodbus";
 import { z } from "zod";
 import mitt from "mitt";
+import { EventEmitter as tseep } from "tseep";
 import tests from "../tests/index.mjs";
 import { createAssertableListenerStore } from "../utils.mjs";
 
 const schema = {
   foo: z.string(),
+};
+
+const debugImplementationCalls = (implementation) => {
+  return Object.entries(implementation).reduce((acc, [key, value]) => {
+    if (typeof value === "function") {
+      acc[key] = (...args) => {
+        console.log(`${key}()`, args);
+        return value(...args);
+      };
+    } else {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
 };
 
 const implementations = {
@@ -30,10 +45,16 @@ const implementations = {
       instance.on(event, listener);
     },
   },
+  tseep: {
+    init: () => new tseep(),
+    subscribe: (instance, event, listener) => instance.on(event, (data) => listener(data)),
+    unsubscribe: (instance, event, listener) => instance.off(event, listener),
+    publish: (instance, event, data) => instance.emit(event, data),
+    once: (instance, event, listener) => instance.once(event, listener),
+  },
 };
 
-const createNormalizedInstance = (implementation) => {
-  const instance = implementation.init();
+const normalizeInstance = (implementation, instance) => {
   return {
     instance,
     subscribe: (event, listener) => implementation.subscribe(instance, event, listener),
@@ -42,17 +63,23 @@ const createNormalizedInstance = (implementation) => {
     once: (event, listener) => implementation.once(instance, event, listener),
   };
 };
+const createNormalizedInstance = (implementation) => {
+  const instance = implementation.init();
+  return normalizeInstance(implementation, instance);
+};
 
 for (const test of tests) {
   console.log(`\n${test.name}`);
 
   const listenerStore = createAssertableListenerStore(implementations);
-  const bench = new Bench({ time: 100 });
+  const bench = new Bench({ time: 500 });
 
   let listenerCount = 0;
   let listenerCallCount = 0;
   for (const [implementationName, implementation] of Object.entries(implementations)) {
     let implementationListenerCount = 0;
+    let instance = null;
+
     const createListener = () => {
       listenerCount++;
       implementationListenerCount++;
@@ -63,7 +90,7 @@ for (const test of tests) {
         listener(...args);
       };
     };
-    let instance = null;
+
     bench.add(
       `${implementationName}`,
       () => {
@@ -76,12 +103,10 @@ for (const test of tests) {
       {
         beforeEach: () => {
           implementationListenerCount = 0;
-          instance =
-            test.setup === false
-              ? null
-              : typeof test.setup === "function"
-              ? test.setup(implementation)
-              : createNormalizedInstance(implementation);
+          if (test.setup === false) instance = null;
+          else if (typeof test.setup === "function")
+            instance = test.setup({ implementation, createListener, normalizeInstance });
+          else instance = createNormalizedInstance(implementation);
         },
       }
     );

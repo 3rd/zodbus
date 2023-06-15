@@ -1,12 +1,16 @@
 export default {
   name: "publish-multiple-listeners",
-  run({ instance, createListener }) {
+  setup({ implementation, createListener, normalizeInstance }) {
+    const instance = implementation.init();
     const firstListener = createListener();
     const secondListener = createListener();
-    instance.subscribe("foo", firstListener);
-    instance.subscribe("foo", secondListener);
+    const thirdListener = createListener();
+    implementation.subscribe(instance, "foo", firstListener);
+    implementation.subscribe(instance, "foo", secondListener);
+    implementation.subscribe(instance, "foo", thirdListener);
+    return normalizeInstance(implementation, instance);
+  },
+  run({ instance }) {
     instance.publish("foo", "bar");
-    instance.publish("foo", "bax");
-    instance.publish("foo", "baz");
   },
 };
