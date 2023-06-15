@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/3rd/zodbus/compare/v1.0.0...v1.0.1) (2023-06-15)
+
+### Bug Fixes
+
+- fix types not built on CI ([f1ed4de](https://github.com/3rd/zodbus/commit/f1ed4de60c7df0b98bcee4982826bc7059d4b1ff))
+
 # 1.0.0 (2023-06-15)
 
 ### Bug Fixes
