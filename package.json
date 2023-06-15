@@ -13,8 +13,12 @@
     "email": "3rd@users.noreply.github.com"
   },
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "typings": "dist/index.d.ts",
+  "main": "dist/index.mjs",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -26,6 +30,7 @@
     "postbuild": "tsc -p tsconfig.build.json",
     "test": "jest",
     "tsc": "tsc",
+    "benchmark": "cd benchmark && npm run benchmark",
     "prepare": "husky install",
     "prepublishOnly": "pnpm run build && pnpm run tsc && pnpm run test",
     "clean": "rm -rf dist"
