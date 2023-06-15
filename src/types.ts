@@ -73,7 +73,7 @@ export type ExcludeDirectlyNestedKeys<T extends string> = T extends `${infer L}.
   : never;
 
 export type Subscription<T extends Schema> = {
-  [K in Exclude<WildcardPath<SchemaPath<T>>, ExcludeDirectlyNestedKeys<SchemaPath<T>>>]: {
+  [K in Exclude<WildcardPath<SchemaPath<T>>, ExcludeDirectlyNestedKeys<SchemaPath<T>>> | "*"]: {
     listener: InferSubscriptionListener<T, K>;
     payload: InferSubscriptionListenerPayload<T, K>;
   };
