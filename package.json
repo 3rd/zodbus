@@ -20,6 +20,7 @@
   "scripts": {
     "build": "node src/scripts/build.mjs",
     "test": "jest",
+    "tsc": "tsc",
     "prepare": "husky install",
     "prepublishOnly": "pnpm run build && pnpm run tsc && pnpm run test",
     "clean": "rm -rf dist"
