@@ -1,28 +1,16 @@
 import type { EventEmitter as NodeEventEmitter } from "node:events";
-import type { PublishKey, Schema, SubscriptionKey, SubscriptionListenerPayloads, SubscriptionListeners } from "./types";
-import { create } from "./bus";
 import { z } from "zod";
-
-interface EventEmitter<T extends Schema> extends NodeEventEmitter {
-  addListener<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this;
-  on<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this;
-  once<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this;
-  removeListener<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this;
-  off<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this;
-  removeAllListeners<K extends SubscriptionKey<T>>(event?: K): this;
-  setMaxListeners(n: number): this;
-  getMaxListeners(): number;
-  listeners<K extends SubscriptionKey<T>>(event: K): Function[];
-  rawListeners<K extends SubscriptionKey<T>>(event: K): Function[];
-  emit<K extends PublishKey<T>>(event: K, ...args: [SubscriptionListenerPayloads<T>[K]]): boolean;
-  listenerCount<K extends SubscriptionKey<T>>(type: K): number;
-  prependListener<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this;
-  prependOnceListener<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this;
-  eventNames<K extends PublishKey<T>>(): K[];
-}
+import type {
+  PublishKey,
+  Schema,
+  SubscriptionKey,
+  SubscriptionListenerPayloads,
+  SubscriptionListeners,
+} from "../types";
+import { create } from "../bus";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-class EventEmitter<T extends Schema> implements EventEmitter<T> {
+class EventEmitter<T extends Schema> implements NodeEventEmitter {
   private bus: ReturnType<typeof create<T>>;
 
   constructor({ schema }: { schema: T }) {
@@ -59,10 +47,12 @@ class EventEmitter<T extends Schema> implements EventEmitter<T> {
     return this;
   }
 
-  setMaxListeners(n: number): this {
-    return this;
+  // eslint-disable-next-line class-methods-use-this
+  setMaxListeners(_n: number): this {
+    throw new Error("Not supported");
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getMaxListeners(): number {
     return Number.POSITIVE_INFINITY;
   }
@@ -84,16 +74,14 @@ class EventEmitter<T extends Schema> implements EventEmitter<T> {
     return this.listeners(type).length;
   }
 
-  prependListener<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this {
-    // TODO
-    // this.bus.subscribe(event, listener, { prepend: true });
-    return this;
+  // eslint-disable-next-line class-methods-use-this
+  prependListener<K extends SubscriptionKey<T>>(_event: K, _listener: SubscriptionListeners<T>[K]): this {
+    throw new Error("Not supported");
   }
 
-  prependOnceListener<K extends SubscriptionKey<T>>(event: K, listener: SubscriptionListeners<T>[K]): this {
-    // TODO
-    // this.bus.subscribeOnce(event, listener, { prepend: true });
-    return this;
+  // eslint-disable-next-line class-methods-use-this
+  prependOnceListener<K extends SubscriptionKey<T>>(_event: K, _listener: SubscriptionListeners<T>[K]): this {
+    throw new Error("Not supported");
   }
 
   eventNames() {
@@ -103,6 +91,7 @@ class EventEmitter<T extends Schema> implements EventEmitter<T> {
 
 export { EventEmitter };
 
+// eslint-disable-next-line unicorn/prefer-event-target
 const ee = new EventEmitter({
   schema: {
     foo: z.object({
