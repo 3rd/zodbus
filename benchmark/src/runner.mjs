@@ -1,10 +1,9 @@
-import { Bench } from "tinybench";
+import * as mitata from "mitata";
 import { create } from "zodbus";
 import { z } from "zod";
 import mitt from "mitt";
 import { EventEmitter as tseep } from "tseep";
-import tests from "../tests/index.mjs";
-import { createAssertableListenerStore } from "../utils.mjs";
+import { createAssertableListenerStore, banner } from "./utils.mjs";
 
 const schema = {
   foo: z.string(),
@@ -31,6 +30,7 @@ const implementations = {
     unsubscribe: (instance, event, listener) => instance.unsubscribe(event, listener),
     publish: (instance, event, data) => instance.publish(event, data),
     once: (instance, event, listener) => instance.subscribeOnce(event, listener),
+    reset: (instance) => instance.unsubscribe("*"),
   },
   mitt: {
     init: () => mitt(),
@@ -44,6 +44,7 @@ const implementations = {
       };
       instance.on(event, listener);
     },
+    reset: (instance) => instance.all.clear(),
   },
   tseep: {
     init: () => new tseep(),
@@ -51,6 +52,7 @@ const implementations = {
     unsubscribe: (instance, event, listener) => instance.off(event, listener),
     publish: (instance, event, data) => instance.emit(event, data),
     once: (instance, event, listener) => instance.once(event, listener),
+    reset: (instance) => instance.removeAllListeners(),
   },
 };
 
@@ -61,6 +63,7 @@ const normalizeInstance = (implementation, instance) => {
     unsubscribe: (event, listener) => implementation.unsubscribe(instance, event, listener),
     publish: (event, data) => implementation.publish(instance, event, data),
     once: (event, listener) => implementation.once(instance, event, listener),
+    reset: () => implementation.reset(instance),
   };
 };
 const createNormalizedInstance = (implementation) => {
@@ -68,54 +71,51 @@ const createNormalizedInstance = (implementation) => {
   return normalizeInstance(implementation, instance);
 };
 
-for (const test of tests) {
-  console.log(`\n${test.name}`);
+export const benchmark = async (suite) => {
+  banner(suite.name);
 
   const listenerStore = createAssertableListenerStore(implementations);
-  const bench = new Bench({ time: 500 });
-
   let listenerCount = 0;
   let listenerCallCount = 0;
-  for (const [implementationName, implementation] of Object.entries(implementations)) {
-    let implementationListenerCount = 0;
-    let instance = null;
 
-    const createListener = () => {
-      listenerCount++;
-      implementationListenerCount++;
-      const listenerKey = `${test.name}(${implementationListenerCount})`;
-      const listener = listenerStore.createListener(implementationName, listenerKey);
-      return (...args) => {
-        listenerCallCount++;
-        listener(...args);
+  mitata.group(suite.name, () => {
+    for (const [implementationName, implementation] of Object.entries(implementations)) {
+      let implementationListenerCount = 0;
+
+      const createListener = () => {
+        listenerCount++;
+        implementationListenerCount++;
+        const listenerKey = `${suite.name}(${implementationListenerCount})`;
+        const listener = listenerStore.createListener(implementationName, listenerKey);
+        return (...args) => {
+          listenerCallCount++;
+          listener(...args);
+        };
       };
-    };
 
-    bench.add(
-      `${implementationName}`,
-      () => {
-        test.run({
+      const createInstance = () => {
+        if (suite.setup === false) return null;
+        else if (typeof suite.setup === "function")
+          return suite.setup({ implementation, createListener, normalizeInstance });
+        else return createNormalizedInstance(implementation);
+      };
+      const instance = createInstance();
+
+      mitata.bench(`${implementationName}`, () => {
+        implementationListenerCount = 0;
+        instance?.reset();
+        suite.run({
           implementation,
           instance,
           createListener,
         });
-      },
-      {
-        beforeEach: () => {
-          implementationListenerCount = 0;
-          if (test.setup === false) instance = null;
-          else if (typeof test.setup === "function")
-            instance = test.setup({ implementation, createListener, normalizeInstance });
-          else instance = createNormalizedInstance(implementation);
-        },
-      }
-    );
-  }
+      });
+    }
+  });
 
-  await bench.run();
+  await mitata.run({});
 
-  console.table(bench.table());
-  console.log(`Created listeners: ${listenerCount}`);
+  console.log(`\nCreated listeners: ${listenerCount}`);
   console.log(`Listener call count: ${listenerCount}`);
   console.log(
     `Dispatched event counts:\n${Array.from(listenerStore.callMap.keys())
@@ -128,4 +128,4 @@ for (const test of tests) {
       .join("\n")}`
   );
   listenerStore.assertImplementationCalls();
-}
+};
