@@ -5,10 +5,6 @@ import mitt from "mitt";
 import { EventEmitter as tseep } from "tseep";
 import { createAssertableListenerStore, banner } from "./utils.mjs";
 
-const schema = {
-  foo: z.string(),
-};
-
 const debugImplementationCalls = (implementation) => {
   return Object.entries(implementation).reduce((acc, [key, value]) => {
     if (typeof value === "function") {
@@ -23,111 +19,84 @@ const debugImplementationCalls = (implementation) => {
   }, {});
 };
 
-const implementations = {
-  zodbus: {
-    init: () => create({ schema, validate: false }),
-    subscribe: (instance, event, listener) => instance.subscribe(event, listener),
-    unsubscribe: (instance, event, listener) => instance.unsubscribe(event, listener),
-    publish: (instance, event, data) => instance.publish(event, data),
-    once: (instance, event, listener) => instance.subscribeOnce(event, listener),
-    reset: (instance) => instance.unsubscribe("*"),
-  },
-  mitt: {
-    init: () => mitt(),
-    subscribe: (instance, event, listener) => instance.on(event, listener),
-    unsubscribe: (instance, event, listener) => instance.off(event, listener),
-    publish: (instance, event, data) => instance.emit(event, data),
-    once: (instance, event, listener) => {
-      const wrappedListener = () => {
-        listener();
-        instance.off("foo", wrappedListener);
-      };
-      instance.on(event, listener);
-    },
-    reset: (instance) => instance.all.clear(),
-  },
-  tseep: {
-    init: () => new tseep(),
-    subscribe: (instance, event, listener) => instance.on(event, (data) => listener(data)),
-    unsubscribe: (instance, event, listener) => instance.off(event, listener),
-    publish: (instance, event, data) => instance.emit(event, data),
-    once: (instance, event, listener) => instance.once(event, listener),
-    reset: (instance) => instance.removeAllListeners(),
-  },
-};
-
-const normalizeInstance = (implementation, instance) => {
+const createInstances = () => {
+  const zodbus = create({ schema: { foo: z.string() }, validate: false });
+  const mittEmitter = mitt();
+  const tseepEmitter = new tseep();
   return {
-    instance,
-    subscribe: (event, listener) => implementation.subscribe(instance, event, listener),
-    unsubscribe: (event, listener) => implementation.unsubscribe(instance, event, listener),
-    publish: (event, data) => implementation.publish(instance, event, data),
-    once: (event, listener) => implementation.once(instance, event, listener),
-    reset: () => implementation.reset(instance),
+    zodbus,
+    mitt: mittEmitter,
+    tseep: tseepEmitter,
   };
 };
-const createNormalizedInstance = (implementation) => {
-  const instance = implementation.init();
-  return normalizeInstance(implementation, instance);
-};
+
+const DEBUG = false;
 
 export const benchmark = async (suite) => {
   banner(suite.name);
 
-  const listenerStore = createAssertableListenerStore(implementations);
+  const listenerStore = createAssertableListenerStore(["zodbus", "mitt", "tseep"]);
   let listenerCount = 0;
   let listenerCallCount = 0;
+  let implementationListenerCounts = {
+    zodbus: 0,
+    mitt: 0,
+    tseep: 0,
+  };
+
+  const createListener = function (implementationName) {
+    if (!DEBUG) return function () {};
+    listenerCount++;
+    implementationListenerCounts[implementationName]++;
+    const listenerKey = `${suite.name}(${implementationListenerCounts[implementationName]})`;
+    const listener = listenerStore.createListener(implementationName, listenerKey);
+    return function (data) {
+      listenerCallCount++;
+      listener(data);
+    };
+  };
+
+  const instances = createInstances();
+  let exportedSetupContext = null;
+  if (suite.setup) {
+    exportedSetupContext = suite.setup({ ...instances, createListener });
+  }
+
+  const tests = Object.entries(suite.run).map(([key, run]) => {
+    const context = {
+      instance: suite.setup === false ? null : instances[key],
+      createListener,
+      ...exportedSetupContext,
+    };
+    return {
+      name: key,
+      run: run.bind(null, context),
+    };
+  });
 
   mitata.bench("noop", () => {});
 
   mitata.group(suite.name, () => {
-    for (const [implementationName, implementation] of Object.entries(implementations)) {
-      let implementationListenerCount = 0;
-
-      const createListener = () => {
-        listenerCount++;
-        implementationListenerCount++;
-        const listenerKey = `${suite.name}(${implementationListenerCount})`;
-        const listener = listenerStore.createListener(implementationName, listenerKey);
-        return (...args) => {
-          listenerCallCount++;
-          listener(...args);
-        };
-      };
-
-      const createInstance = () => {
-        if (suite.setup === false) return null;
-        else if (typeof suite.setup === "function")
-          return suite.setup({ implementation, createListener, normalizeInstance });
-        else return createNormalizedInstance(implementation);
-      };
-      const instance = createInstance();
-
-      mitata.bench(`${implementationName}`, () => {
-        implementationListenerCount = 0;
-        instance?.reset();
-        suite.run({
-          implementation,
-          instance,
-          createListener,
-        });
-      });
+    for (const test of tests) {
+      mitata.bench(test.name, test.run);
     }
   });
 
   await mitata.run({});
 
-  console.log(`\nCreated listeners: ${listenerCount}`);
-  console.log(`Listener call count: ${listenerCount}`);
-  console.log(
-    `Dispatched event counts:\n${Array.from(listenerStore.callMap.keys())
-      .map(
-        (name) =>
-          `  ${name}: ${Array.from(listenerStore.callMap.get(name).values()).reduce((acc, d) => {
-            return acc + d.count;
-          }, 0)}`
-      )
-      .join("\n")}`
-  );
-  listenerStore.assertImplementationCalls();
+  if (DEBUG) {
+    console.log(`\nCreated listeners: ${listenerCount}`);
+    console.log(`Listener call count: ${listenerCallCount}`);
+    console.log(
+      `Dispatched event counts:\n${Array.from(listenerStore.callMap.keys())
+        .map(
+          (name) =>
+            `  ${name}: ${Array.from(listenerStore.callMap.get(name).values()).reduce((acc, d) => {
+              return acc + d.count;
+            }, 0)}`
+        )
+        .join("\n")}`
+    );
+    listenerStore.assertImplementationCalls();
+  }
 };

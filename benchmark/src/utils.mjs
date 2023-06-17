@@ -29,9 +29,9 @@ export const assert = (actual, expected, message = "Assertion failed") => {
   }
 };
 
-export const createAssertableListenerStore = (implementations) => {
+export const createAssertableListenerStore = (implementationNames) => {
   // Map<`${implementation}`, Map<`${test}(${index})`, { data, count }>>
-  const callMap = new Map(Object.keys(implementations).map((name) => [name, new Map()]));
+  const callMap = new Map(implementationNames.map((name) => [name, new Map()]));
 
   const createListener = (implementationName, listenerKey) => {
     const listener = function (data) {
