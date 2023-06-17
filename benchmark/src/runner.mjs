@@ -78,6 +78,8 @@ export const benchmark = async (suite) => {
   let listenerCount = 0;
   let listenerCallCount = 0;
 
+  mitata.bench("noop", () => {});
+
   mitata.group(suite.name, () => {
     for (const [implementationName, implementation] of Object.entries(implementations)) {
       let implementationListenerCount = 0;
