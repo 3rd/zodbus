@@ -1,19 +1,19 @@
 {
   "name": "benchmark",
   "version": "1.0.0",
-  "description": "",
   "type": "module",
   "scripts": {
     "benchmark": "find ./src/tests -name '*.mjs' -exec node {} \\;"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "mitata": "^0.1.6",
-    "mitt": "^3.0.0",
-    "tseep": "^1.1.1",
-    "zod": "^3.21.4",
+    "drip": "latest",
+    "emitix": "latest",
+    "eventemitter3": "latest",
+    "fastemitter": "latest",
+    "mitata": "latest",
+    "mitt": "latest",
+    "tseep": "latest",
+    "zod": "latest",
     "zodbus": "link:.."
   }
 }

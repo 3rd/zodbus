@@ -3,6 +3,10 @@ import { create } from "zodbus";
 import { z } from "zod";
 import mitt from "mitt";
 import { EventEmitter as tseep } from "tseep";
+import EventEmitter3 from "eventemitter3";
+import drip from "drip";
+import fastemitter from "fastemitter";
+import emitix from "emitix";
 import { createAssertableListenerStore, banner } from "./utils.mjs";
 
 const debugImplementationCalls = (implementation) => {
@@ -21,12 +25,14 @@ const debugImplementationCalls = (implementation) => {
 
 const createInstances = () => {
   const zodbus = create({ schema: { foo: z.string() }, validate: false });
-  const mittEmitter = mitt();
-  const tseepEmitter = new tseep();
   return {
     zodbus,
-    mitt: mittEmitter,
-    tseep: tseepEmitter,
+    mitt: mitt(),
+    tseep: new tseep(),
+    eventemitter3: new EventEmitter3(),
+    drip: new drip.EventEmitter(),
+    fastemitter: new fastemitter(),
+    emitix: new emitix.default(),
   };
 };
 
@@ -42,6 +48,10 @@ export const benchmark = async (suite) => {
     zodbus: 0,
     mitt: 0,
     tseep: 0,
+    eventemitter3: 0,
+    drip: 0,
+    fastemitter: 0,
+    emitix: 0,
   };
 
   const createListener = function (implementationName) {

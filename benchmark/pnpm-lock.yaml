@@ -5,23 +5,57 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  drip:
+    specifier: latest
+    version: 1.4.0
+  emitix:
+    specifier: latest
+    version: 2.2.0
+  eventemitter3:
+    specifier: latest
+    version: 5.0.1
+  fastemitter:
+    specifier: latest
+    version: 0.0.5-0
   mitata:
-    specifier: ^0.1.6
+    specifier: latest
     version: 0.1.6
   mitt:
-    specifier: ^3.0.0
+    specifier: latest
     version: 3.0.0
   tseep:
-    specifier: ^1.1.1
+    specifier: latest
     version: 1.1.1
   zod:
-    specifier: ^3.21.4
+    specifier: latest
     version: 3.21.4
   zodbus:
     specifier: link:..
     version: link:..
 
 packages:
+  /drip@1.4.0:
+    resolution:
+      { integrity: sha512-lu5Y1eUmCWFYv51ngcGCRghJVvGqWseGXa6QNov2dfawKkpKU3GJSFobGqz+hnMFktepML26g865qRpT8QLfMQ== }
+    dependencies:
+      tea-concat: 0.1.0
+    dev: false
+
+  /emitix@2.2.0:
+    resolution:
+      { integrity: sha512-aML/8Gqt8hGr1v7rjRH17jQsgVJ1iLTRUpsn+2zcKnAfmqYDSiktyz8TBxiQlX+TddLc7yTlaw7lrk97H6mBxA== }
+    dev: false
+
+  /eventemitter3@5.0.1:
+    resolution:
+      { integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA== }
+    dev: false
+
+  /fastemitter@0.0.5-0:
+    resolution:
+      { integrity: sha512-UL1t6IoQE0G2BSeqsad/bLmKSKJ4qjjbqCtPmIfdqUj0bbXE0EMSeYO/uVHmYWcqrJAfPy35Ai366Q6xlW5M2g== }
+    dev: false
+
   /mitata@0.1.6:
     resolution:
       { integrity: sha512-VKQ0r3jriTOU9E2Z+mwbZrUmbg4Li4QyFfi7kfHKl6reZhGzL0AYlu3wE0VPXzIwA5xnFzmEQoBwCcNT8stUkA== }
@@ -30,6 +64,11 @@ packages:
   /mitt@3.0.0:
     resolution:
       { integrity: sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ== }
+    dev: false
+
+  /tea-concat@0.1.0:
+    resolution:
+      { integrity: sha512-DtBfLLwLBUKht/GDHCsfIyLrygum21JdPW438Srutjj2xVtDNrD0RCP/1TGw9as+R2p3W2nPYtkiGqCpVYes+A== }
     dev: false
 
   /tseep@1.1.1:
