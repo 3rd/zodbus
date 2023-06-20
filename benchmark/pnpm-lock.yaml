@@ -1,10 +1,13 @@
-lockfileVersion: "6.1"
+lockfileVersion: "6.0"
 
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
 dependencies:
+  benchmate:
+    specifier: latest
+    version: 1.2.0
   drip:
     specifier: latest
     version: 1.4.0
@@ -17,9 +20,6 @@ dependencies:
   fastemitter:
     specifier: latest
     version: 0.0.5-0
-  mitata:
-    specifier: latest
-    version: 0.1.6
   mitt:
     specifier: latest
     version: 3.0.0
@@ -34,6 +34,11 @@ dependencies:
     version: link:..
 
 packages:
+  /benchmate@1.2.0:
+    resolution:
+      { integrity: sha512-8QqVW7Rmz2WQf0FBJ7nKaR4gPy0Fk3h70NkkUOXjj3CRYA/UKz036ZIF+Bf84S4/90wgm5PiAocDJUGhDsvV/g== }
+    dev: false
+
   /drip@1.4.0:
     resolution:
       { integrity: sha512-lu5Y1eUmCWFYv51ngcGCRghJVvGqWseGXa6QNov2dfawKkpKU3GJSFobGqz+hnMFktepML26g865qRpT8QLfMQ== }
@@ -54,11 +59,6 @@ packages:
   /fastemitter@0.0.5-0:
     resolution:
       { integrity: sha512-UL1t6IoQE0G2BSeqsad/bLmKSKJ4qjjbqCtPmIfdqUj0bbXE0EMSeYO/uVHmYWcqrJAfPy35Ai366Q6xlW5M2g== }
-    dev: false
-
-  /mitata@0.1.6:
-    resolution:
-      { integrity: sha512-VKQ0r3jriTOU9E2Z+mwbZrUmbg4Li4QyFfi7kfHKl6reZhGzL0AYlu3wE0VPXzIwA5xnFzmEQoBwCcNT8stUkA== }
     dev: false
 
   /mitt@3.0.0:

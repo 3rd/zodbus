@@ -1,4 +1,4 @@
-import * as mitata from "mitata";
+import { Bench } from "benchmate";
 import { create } from "zodbus";
 import { z } from "zod";
 import mitt from "mitt";
@@ -84,15 +84,13 @@ export const benchmark = async (suite) => {
     };
   });
 
-  mitata.bench("noop", () => {});
+  const bench = new Bench();
 
-  mitata.group(suite.name, () => {
-    for (const test of tests) {
-      mitata.bench(test.name, test.run);
-    }
-  });
+  for (const test of tests) {
+    bench.add(test.name, test.run);
+  }
 
-  await mitata.run({});
+  await bench.run({});
 
   if (DEBUG) {
     console.log(`\nCreated listeners: ${listenerCount}`);

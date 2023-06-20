@@ -6,11 +6,11 @@
     "benchmark": "find ./src/tests -name '*.mjs' -exec node {} \\;"
   },
   "dependencies": {
+    "benchmate": "latest",
     "drip": "latest",
     "emitix": "latest",
     "eventemitter3": "latest",
     "fastemitter": "latest",
-    "mitata": "latest",
     "mitt": "latest",
     "tseep": "latest",
     "zod": "latest",
