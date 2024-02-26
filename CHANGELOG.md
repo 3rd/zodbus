@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/3rd/zodbus/compare/v1.0.3...v1.0.4) (2024-02-26)
+
+### Bug Fixes
+
+- typings mapping & clean-up ([5b3cc4a](https://github.com/3rd/zodbus/commit/5b3cc4aa1932b754958f84cd0d4cf9a9dea25762))
+
 ## [1.0.3](https://github.com/3rd/zodbus/compare/v1.0.2...v1.0.3) (2023-06-15)
 
 ### Bug Fixes
