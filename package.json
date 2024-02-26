@@ -17,12 +17,18 @@
     "dist"
   ],
   "type": "module",
-  "typings": "dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/index.mjs",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": {
+        "default": "./dist/index.mjs",
+        "types": "./dist/index.d.ts"
+      },
+      "require": {
+        "default": "./dist/index.cjs",
+        "types": "./dist/index.d.ts"
+      }
     }
   },
   "scripts": {

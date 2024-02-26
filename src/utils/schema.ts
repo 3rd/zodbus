@@ -40,8 +40,8 @@ export const getSubPubPathMap = (schema: Schema | ZodType): Record<string, strin
     map[subscribePath] = publishPaths.filter((publishPath) => {
       const publishParts = publishPath.split(".");
       if (publishParts.length !== subscribeParts.length) return false;
-      for (let i = 0; i < publishParts.length; i++) {
-        if (subscribeParts[i] !== "*" && publishParts[i] !== subscribeParts[i]) return false;
+      for (const [i, publishPart] of publishParts.entries()) {
+        if (subscribeParts[i] !== "*" && publishPart !== subscribeParts[i]) return false;
       }
       return true;
     });

@@ -30,7 +30,7 @@ interface Bus<T extends Schema> {
 function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): Bus<T> {
   const subPubPathMap = getSubPubPathMap(schema) as Record<SubscriptionKey<T>, PublishKey<T>[]>;
   const eventNames = Array.from(new Set(Object.values(subPubPathMap).flat())) as PublishKey<T>[];
-  const listeners: Map<PublishKey<T>, Set<unknown>> = new Map();
+  const listeners = new Map<PublishKey<T>, Set<unknown>>();
 
   const getListenerSetsForSubscriptionKey = (event: SubscriptionKey<T>): Set<unknown>[] => {
     if (event === "*") return Array.from(listeners.values());
@@ -46,12 +46,12 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
 
   const validatePayloadOrPanic = (event: string, data: unknown): void => {
     const pathFragments = event.split(".");
-    let currentSchema: ZodType | Schema = schema;
+    let currentSchema: Schema | ZodType = schema;
     for (const fragment of pathFragments) {
-      if (typeof (currentSchema as Record<string, unknown>)[fragment] === "undefined") {
+      if ((currentSchema as Record<string, unknown>)[fragment] === undefined) {
         throw new ValidationError(`Invalid event: "${event}". Could not resolve "${fragment}" fragment.`);
       }
-      currentSchema = (currentSchema as Record<string, ZodType | Schema>)[fragment];
+      currentSchema = (currentSchema as Record<string, Schema | ZodType>)[fragment];
     }
     if (typeof currentSchema.parse === "function") {
       (currentSchema as ZodType).parse(data);
@@ -76,7 +76,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
   const unsubscribe = <K extends SubscriptionKey<T>>(event: K, listener?: SubscriptionListeners<T>[K]): void => {
     const eventListeners = getListenerSetsForSubscriptionKey(event);
     for (const listenerSet of eventListeners) {
-      if (typeof listener === "undefined") {
+      if (listener === undefined) {
         listenerSet.clear();
       } else {
         listenerSet.delete(listener);
@@ -167,7 +167,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
     event: K,
     options: { timeout?: number; filter?: (data: SubscriptionListenerPayloads<T>[K]) => boolean } = {}
   ) => {
-    const { timeout = 5_000, filter } = options;
+    const { timeout = 5000, filter } = options;
     return new Promise<SubscriptionListenerPayloads<T>[K]>((resolve, reject) => {
       let timeoutId: ReturnType<typeof setTimeout>;
       const listener = (data: unknown) => {
