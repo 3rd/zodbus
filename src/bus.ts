@@ -19,7 +19,7 @@ interface Bus<T extends Schema> {
     listener: SubscriptionListeners<T>[K]
   ) => { event: K; listener: SubscriptionListeners<T>[K]; unsubscribe: () => void };
   unsubscribe: <K extends SubscriptionKey<T>>(event: K, listener?: SubscriptionListeners<T>[K]) => void;
-  getEventNames: () => string[];
+  getEventNames: () => PublishKey<T>[];
   getListeners: <K extends SubscriptionKey<T>>(event?: K) => ((data: unknown, eventName: string) => void)[];
   waitFor: <K extends SubscriptionKey<T>>(
     event: K,
@@ -30,11 +30,11 @@ interface Bus<T extends Schema> {
 function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): Bus<T> {
   const subPubPathMap = getSubPubPathMap(schema) as Record<SubscriptionKey<T>, PublishKey<T>[]>;
   const eventNames = Array.from(new Set(Object.values(subPubPathMap).flat())) as PublishKey<T>[];
-  const listeners = new Map<PublishKey<T>, Set<unknown>>();
+  const listeners = new Map<PublishKey<T>, Set<SubscriptionListeners<T>[PublishKey<T>]>>();
 
   const getListenerSetsForSubscriptionKey = (event: SubscriptionKey<T>): Set<unknown>[] => {
     if (event === "*") return Array.from(listeners.values());
-    const listenerSets: Set<unknown>[] = [];
+    const listenerSets: Set<SubscriptionListeners<T>[PublishKey<T>]>[] = [];
     const publishPaths = subPubPathMap[event];
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
     for (const publishPath of publishPaths) {
@@ -48,13 +48,13 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
     const pathFragments = event.split(".");
     let currentSchema: Schema | ZodType = schema;
     for (const fragment of pathFragments) {
-      if ((currentSchema as Record<string, unknown>)[fragment] === undefined) {
+      currentSchema = (currentSchema as Record<string, Schema | ZodType>)[fragment];
+      if (!currentSchema) {
         throw new ValidationError(`Invalid event: "${event}". Could not resolve "${fragment}" fragment.`);
       }
-      currentSchema = (currentSchema as Record<string, Schema | ZodType>)[fragment];
     }
-    if (typeof currentSchema.parse === "function") {
-      (currentSchema as ZodType).parse(data);
+    if (currentSchema instanceof ZodType) {
+      currentSchema.parse(data);
     } else {
       throw new ValidationError(`Reached invalid payload schema for: "${event}"`);
     }
@@ -105,8 +105,9 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
     const publishPaths = event === "*" ? eventNames : subPubPathMap[event];
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
     for (const publishPath of publishPaths) {
-      if (!listeners.has(publishPath)) listeners.set(publishPath, new Set());
-      listeners.get(publishPath)!.add(listener);
+      const listenerSet = listeners.get(publishPath) ?? new Set();
+      listenerSet.add(listener as SubscriptionListeners<T>[PublishKey<T>]);
+      listeners.set(publishPath, listenerSet);
     }
     return { event, listener, unsubscribe: () => unsubscribe(event, listener) };
   };

@@ -195,7 +195,7 @@ describe("bus", () => {
     it("throws an error if an event is published that does not match the schema", () => {
       const bus = create({ schema });
       // @ts-expect-error
-      expect(() => bus.publish("foo", { field: 1 })).toThrowError(
+      expect(() => bus.publish("foo", { field: 1 })).toThrow(
         JSON.stringify(
           [
             {
@@ -217,7 +217,7 @@ describe("bus", () => {
     it("does not throw an error if an event is published that does not match the schema", () => {
       const bus = create({ schema, validate: false });
       // @ts-expect-error
-      expect(() => bus.publish("foo", { field: 1 })).not.toThrowError();
+      expect(() => bus.publish("foo", { field: 1 })).not.toThrow();
     });
   });
 
@@ -258,26 +258,26 @@ describe("bus", () => {
   it("throws and error when trying to retrieve the listeners for an unknown event", () => {
     const bus = create({ schema });
     // @ts-expect-error
-    expect(() => bus.getListeners("unknown")).toThrowError(`${errorPrefix}Invalid event: "unknown"`);
+    expect(() => bus.getListeners("unknown")).toThrow(`${errorPrefix}Invalid event: "unknown"`);
   });
 
   it("throws an error if an event is subscribed to that does not match the schema", () => {
     const bus = create({ schema });
     // @ts-expect-error
-    expect(() => bus.subscribe("unknown", jest.fn())).toThrowError(`${errorPrefix}Invalid event: "unknown"`);
+    expect(() => bus.subscribe("unknown", jest.fn())).toThrow(`${errorPrefix}Invalid event: "unknown"`);
   });
 
   it("awaits for an event to be published", async () => {
     const bus = create({ schema });
     const promise = bus.waitFor("foo");
     bus.publish("foo", { field: "test" });
-    expect(await promise).toEqual({ field: "test" });
+    await expect(promise).resolves.toEqual({ field: "test" });
   });
 
   it("awaits for an event to be published with a timeout", async () => {
     const bus = create({ schema });
     const promise = bus.waitFor("foo", { timeout: 10 });
-    await expect(promise).rejects.toThrowError(`${errorPrefix}Timeout waiting for event: "foo"`);
+    await expect(promise).rejects.toThrow(`${errorPrefix}Timeout waiting for event: "foo"`);
   });
 
   it("awaits for an event to be published with a filter", async () => {
@@ -285,10 +285,10 @@ describe("bus", () => {
 
     let promise = bus.waitFor("foo", { filter: (event) => event.field === "test", timeout: 10 });
     bus.publish("foo", { field: "not-test" });
-    await expect(promise).rejects.toThrowError(`${errorPrefix}Timeout waiting for event: "foo"`);
+    await expect(promise).rejects.toThrow(`${errorPrefix}Timeout waiting for event: "foo"`);
 
     promise = bus.waitFor("foo", { filter: (event) => event.field === "test", timeout: 10 });
     bus.publish("foo", { field: "test" });
-    expect(await promise).toEqual({ field: "test" });
+    await expect(promise).resolves.toEqual({ field: "test" });
   });
 });
