@@ -7,7 +7,7 @@ settings:
 dependencies:
   benchmate:
     specifier: latest
-    version: 1.2.0
+    version: 1.7.1
   drip:
     specifier: latest
     version: 1.4.0
@@ -22,21 +22,23 @@ dependencies:
     version: 0.0.5-0
   mitt:
     specifier: latest
-    version: 3.0.0
+    version: 3.0.1
   tseep:
     specifier: latest
-    version: 1.1.1
+    version: 1.2.1
   zod:
     specifier: latest
-    version: 3.21.4
+    version: 3.23.6
   zodbus:
     specifier: link:..
     version: link:..
 
 packages:
-  /benchmate@1.2.0:
+  /benchmate@1.7.1:
     resolution:
-      { integrity: sha512-8QqVW7Rmz2WQf0FBJ7nKaR4gPy0Fk3h70NkkUOXjj3CRYA/UKz036ZIF+Bf84S4/90wgm5PiAocDJUGhDsvV/g== }
+      { integrity: sha512-JQEprxJv3PsHAn24Y9DGwmkCxWNlpAhYvxDhfquJ7YDMoMlRgC2VxtGn47XqL4nkvgbjSXbKtzXZdiKtGe/FfQ== }
+    dependencies:
+      simple-statistics: 7.8.3
     dev: false
 
   /drip@1.4.0:
@@ -61,9 +63,14 @@ packages:
       { integrity: sha512-UL1t6IoQE0G2BSeqsad/bLmKSKJ4qjjbqCtPmIfdqUj0bbXE0EMSeYO/uVHmYWcqrJAfPy35Ai366Q6xlW5M2g== }
     dev: false
 
-  /mitt@3.0.0:
+  /mitt@3.0.1:
     resolution:
-      { integrity: sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ== }
+      { integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw== }
+    dev: false
+
+  /simple-statistics@7.8.3:
+    resolution:
+      { integrity: sha512-JFvMY00t6SBGtwMuJ+nqgsx9ylkMiJ5JlK9bkj8AdvniIe5615wWQYkKHXe84XtSuc40G/tlrPu0A5/NlJvv8A== }
     dev: false
 
   /tea-concat@0.1.0:
@@ -71,12 +78,12 @@ packages:
       { integrity: sha512-DtBfLLwLBUKht/GDHCsfIyLrygum21JdPW438Srutjj2xVtDNrD0RCP/1TGw9as+R2p3W2nPYtkiGqCpVYes+A== }
     dev: false
 
-  /tseep@1.1.1:
+  /tseep@1.2.1:
     resolution:
-      { integrity: sha512-w2MjaqNWGDeliT5/W+/lhhnR0URiVwXXsXbkAZjQVywrOpdKhQAOL1ycyHfNOV1QBjouC7FawNmJePet1sGesw== }
+      { integrity: sha512-VFnsNcPGC4qFJ1nxbIPSjTmtRZOhlqLmtwRqtLVos8mbRHki8HO9cy9Z1e89EiWyxFmq6LBviI9TQjijxw/mEw== }
     dev: false
 
-  /zod@3.21.4:
+  /zod@3.23.6:
     resolution:
-      { integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw== }
+      { integrity: sha512-RTHJlZhsRbuA8Hmp/iNL7jnfc4nZishjsanDAfEY1QpDQZCahUp3xDzl+zfweE9BklxMUcgBgS1b7Lvie/ZVwA== }
     dev: false
