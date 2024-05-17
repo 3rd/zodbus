@@ -7,6 +7,7 @@ const shared = {
   minify: true,
   sourcemap: true,
   platform: "neutral",
+  external: ["zod"],
 };
 
 await esbuild.build({
