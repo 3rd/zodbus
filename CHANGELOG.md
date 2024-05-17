@@ -1,3 +1,9 @@
+## [1.1.3](https://github.com/3rd/zodbus/compare/v1.1.2...v1.1.3) (2024-05-17)
+
+### Bug Fixes
+
+- publish ([4ee3856](https://github.com/3rd/zodbus/commit/4ee385643037665569282ef6de07ef33e63b9d4e))
+
 # [1.1.0](https://github.com/3rd/zodbus/compare/v1.0.4...v1.1.0) (2024-05-17)
 
 ### Bug Fixes
