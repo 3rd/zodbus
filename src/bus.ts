@@ -1,4 +1,4 @@
-import { ZodType } from "zod";
+import { ZodType, z } from "zod";
 import { RuntimeError, ValidationError } from "./errors";
 import type { PublishKey, Schema, SubscriptionKey, SubscriptionListenerPayloads, SubscriptionListeners } from "./types";
 import { getSubPubPathMap } from "./utils/schema";
@@ -53,8 +53,8 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
         throw new ValidationError(`Invalid event: "${event}". Could not resolve "${fragment}" fragment.`);
       }
     }
-    if (currentSchema instanceof ZodType) {
-      currentSchema.parse(data);
+    if ("constructor" in currentSchema && ["ZodType", "ZodObject"].includes(currentSchema.constructor.name)) {
+      (currentSchema as ZodType).parse(data);
     } else {
       throw new ValidationError(`Reached invalid payload schema for: "${event}"`);
     }
