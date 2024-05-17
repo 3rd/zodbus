@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/3rd/zodbus/compare/v1.1.0...v1.1.1) (2024-05-17)
+
+### Bug Fixes
+
+- allow for different zod instance types ([4c5a78c](https://github.com/3rd/zodbus/commit/4c5a78c882eccbda77f6f1744fa34930458acf4b))
+
 # [1.1.0](https://github.com/3rd/zodbus/compare/v1.0.4...v1.1.0) (2024-05-17)
 
 ### Features
