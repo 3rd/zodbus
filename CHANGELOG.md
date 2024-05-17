@@ -1,3 +1,9 @@
+# [1.1.0](https://github.com/3rd/zodbus/compare/v1.0.4...v1.1.0) (2024-05-17)
+
+### Features
+
+- add InferBusType, InferPublishHandler, InferSubscribeHandler helpers ([980408c](https://github.com/3rd/zodbus/commit/980408cec8ad3a787b5f1ed844616e752ee8b4c6))
+
 ## [1.0.4](https://github.com/3rd/zodbus/compare/v1.0.3...v1.0.4) (2024-02-26)
 
 ### Bug Fixes
