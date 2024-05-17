@@ -1,5 +1,16 @@
 # [1.1.0](https://github.com/3rd/zodbus/compare/v1.0.4...v1.1.0) (2024-05-17)
 
+### Bug Fixes
+
+- make sure zod is not bundled ([2089f31](https://github.com/3rd/zodbus/commit/2089f313b689e2c15873971ba3b683106816a170))
+
+### Features
+
+- add InferBusType, InferPublishHandler, InferSubscribeHandler helpers ([980408c](https://github.com/3rd/zodbus/commit/980408cec8ad3a787b5f1ed844616e752ee8b4c6))
+- export InferSubscriptionKey and InferPublishKey helpers ([6322818](https://github.com/3rd/zodbus/commit/6322818830b1242951a17f3695583b0324ae7c31))
+
+# [1.1.0](https://github.com/3rd/zodbus/compare/v1.0.4...v1.1.0) (2024-05-17)
+
 ### Features
 
 - add InferBusType, InferPublishHandler, InferSubscribeHandler helpers ([980408c](https://github.com/3rd/zodbus/commit/980408cec8ad3a787b5f1ed844616e752ee8b4c6))
