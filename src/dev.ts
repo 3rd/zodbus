@@ -22,23 +22,23 @@ type DebugHasWildcard = HasWildcard<"zap.*.zup">;
 type DebugInferListener = InferSubscriptionListener<typeof testSchema, "bar.baz">;
 type DebugSubscriptionListeners = SubscriptionListeners<typeof testSchema>;
 
-const testSchemaPaths: "foo" | "bar.baz" | "zap.zop.zup" = {} as SchemaPath<typeof testSchema>;
+const testSchemaPaths: "bar.baz" | "foo" | "zap.zop.zup" = {} as SchemaPath<typeof testSchema>;
 const testWildcardPaths:
-  | "foo"
-  | "*"
-  | "bar.baz"
-  | "zap.zop.zup"
-  | "zap.*.zup"
-  | "bar.*"
-  | "*.baz"
-  | "*.*"
-  | "zap.*.*"
-  | "zap.zop.*"
-  | "zap.*"
-  | "*.zop.zup"
   | "*.*.*"
+  | "*.*.zup"
+  | "*.*"
+  | "*.baz"
   | "*.zop.*"
-  | "*.*.zup" = {} as WildcardPath<SchemaPath<typeof testSchema>>;
+  | "*.zop.zup"
+  | "*"
+  | "bar.*"
+  | "bar.baz"
+  | "foo"
+  | "zap.*.*"
+  | "zap.*.zup"
+  | "zap.*"
+  | "zap.zop.*"
+  | "zap.zop.zup" = {} as WildcardPath<SchemaPath<typeof testSchema>>;
 
 const testHasWildcard: true = {} as HasWildcard<"*">;
 const testHasWildcard2: true = {} as HasWildcard<"*.zop.zup">;
@@ -52,7 +52,7 @@ const testInferFooListener: (data: { field: string }, event: "foo") => void = {}
   "foo"
 >;
 const testInferBarBazListener: InferSubscriptionListener<typeof testSchema, "bar.baz"> = (
-  data: { field: string | number },
+  data: { field: number | string },
   event: "bar.baz"
 ) => {};
 const testInferWildcardListener: InferSubscriptionListener<typeof testSchema, "bar.*"> = (
@@ -63,7 +63,7 @@ const testInferWildcardListener: InferSubscriptionListener<typeof testSchema, "b
 const testSubscriptionListeners: {
   foo: (data: { field: string }, event: "foo") => void;
   "*": (data: unknown, event: string) => void;
-  "bar.baz": (data: { field: string | number }, event: "bar.baz") => void;
+  "bar.baz": (data: { field: number | string }, event: "bar.baz") => void;
   "bar.*": (data: unknown, event: string) => void;
   "*.baz": (data: unknown, event: string) => void;
   "*.*": (data: unknown, event: string) => void;
