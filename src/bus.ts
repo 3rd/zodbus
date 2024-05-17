@@ -201,5 +201,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
 export type InferBusType<T extends Schema> = ReturnType<typeof create<T>>;
 export type InferPublishHandler<T extends Schema> = InferBusType<T>["publish"];
 export type InferSubscribeHandler<T extends Schema> = InferBusType<T>["subscribe"];
+export type InferSubscriptionKey<T extends Schema> = SubscriptionKey<T>;
+export type InferPublishKey<T extends Schema> = PublishKey<T>;
 
 export { create };
