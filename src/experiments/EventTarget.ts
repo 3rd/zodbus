@@ -1,3 +1,4 @@
+import { z } from "zod/v4";
 import type {
   PublishKey,
   Schema,
@@ -6,7 +7,6 @@ import type {
   SubscriptionListeners,
 } from "../types";
 import { create } from "../bus";
-import { z } from "zod";
 
 class EventTarget<T extends Schema> implements EventTarget<T> {
   private bus: ReturnType<typeof create<T>>;
@@ -18,7 +18,7 @@ class EventTarget<T extends Schema> implements EventTarget<T> {
   addEventListener<K extends SubscriptionKey<T>>(
     event: K,
     listener: SubscriptionListeners<T>[K],
-    _options?: boolean | AddEventListenerOptions
+    _options?: AddEventListenerOptions | boolean
   ): void {
     this.bus.subscribe(event, listener);
   }
@@ -26,7 +26,7 @@ class EventTarget<T extends Schema> implements EventTarget<T> {
   removeEventListener<K extends SubscriptionKey<T>>(
     event: K,
     listener: SubscriptionListeners<T>[K],
-    _options?: boolean | EventListenerOptions
+    _options?: EventListenerOptions | boolean
   ): void {
     this.bus.unsubscribe(event, listener);
   }

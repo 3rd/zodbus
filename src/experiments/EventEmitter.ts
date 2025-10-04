@@ -1,5 +1,5 @@
+import { z } from "zod/v4";
 import type { EventEmitter as NodeEventEmitter } from "node:events";
-import { z } from "zod";
 import type {
   PublishKey,
   Schema,

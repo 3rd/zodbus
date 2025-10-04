@@ -1,11 +1,11 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { create } from "./bus";
 import { errorPrefix } from "./constants";
 
 const schema = {
   foo: z.object({ field: z.string() }),
   bar: {
-    baz: z.object({ field: z.string().or(z.number()) }),
+    baz: z.object({ field: z.union([z.string(), z.number()]) }),
   },
   zap: {
     zop: {
@@ -199,11 +199,10 @@ describe("bus", () => {
         JSON.stringify(
           [
             {
-              code: "invalid_type",
               expected: "string",
-              received: "number",
+              code: "invalid_type",
               path: ["field"],
-              message: "Expected string, received number",
+              message: "Invalid input: expected string, received number",
             },
           ],
           null,
@@ -283,11 +282,17 @@ describe("bus", () => {
   it("awaits for an event to be published with a filter", async () => {
     const bus = create({ schema });
 
-    let promise = bus.waitFor("foo", { filter: (event) => event.field === "test", timeout: 10 });
+    let promise = bus.waitFor("foo", {
+      filter: (event: { field: string }) => event.field === "test",
+      timeout: 10,
+    });
     bus.publish("foo", { field: "not-test" });
     await expect(promise).rejects.toThrow(`${errorPrefix}Timeout waiting for event: "foo"`);
 
-    promise = bus.waitFor("foo", { filter: (event) => event.field === "test", timeout: 10 });
+    promise = bus.waitFor("foo", {
+      filter: (event: { field: string }) => event.field === "test",
+      timeout: 10,
+    });
     bus.publish("foo", { field: "test" });
     await expect(promise).resolves.toEqual({ field: "test" });
   });

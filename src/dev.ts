@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { z } from "zod";
-import type { HasWildcard, InferSubscriptionListener, SubscriptionListeners, SchemaPath, WildcardPath } from "./types";
+import { z } from "zod/v4";
+import type { HasWildcard, InferSubscriptionListener, SchemaPath, SubscriptionListeners, WildcardPath } from "./types";
 import { create } from ".";
 
 const testSchema = {
   foo: z.object({ field: z.string() }),
   bar: {
-    baz: z.object({ field: z.string().or(z.number()) }),
+    baz: z.object({ field: z.union([z.string(), z.number()]) }),
   },
   zap: {
     zop: {

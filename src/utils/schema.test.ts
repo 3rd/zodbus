@@ -1,10 +1,10 @@
-import { z } from "zod";
-import { getPublishPaths, getSubscribePaths, getSubPubPathMap } from "./schema";
+import { z } from "zod/v4";
+import { getPublishPaths, getSubPubPathMap, getSubscribePaths } from "./schema";
 
 const schema = {
   foo: z.object({ field: z.string() }),
   bar: {
-    baz: z.object({ field: z.string().or(z.number()) }),
+    baz: z.object({ field: z.union([z.string(), z.number()]) }),
   },
   zap: {
     zop: {

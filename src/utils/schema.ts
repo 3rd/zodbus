@@ -1,4 +1,4 @@
-import { ZodType } from "zod";
+import { ZodType } from "zod/v4";
 import { Schema } from "../types";
 
 export const hasWildcard = (path: string): boolean => path.split(".").includes("*");

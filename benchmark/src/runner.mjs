@@ -1,6 +1,6 @@
 import { Bench } from "benchmate";
 import { create } from "zodbus";
-import { z } from "zod";
+import { z } from "zod/v4";
 import mitt from "mitt";
 import { EventEmitter as tseep } from "tseep";
 import EventEmitter3 from "eventemitter3";

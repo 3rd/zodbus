@@ -1,6 +1,6 @@
-import { ZodType } from "zod";
-import { RuntimeError, ValidationError } from "./errors";
+import { ZodType } from "zod/v4";
 import type { PublishKey, Schema, SubscriptionKey, SubscriptionListenerPayloads, SubscriptionListeners } from "./types";
+import { RuntimeError, ValidationError } from "./errors";
 import { getSubPubPathMap } from "./utils/schema";
 
 type BusOptions<T extends Schema> = {
@@ -36,6 +36,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
     if (event === "*") return Array.from(listeners.values());
     const listenerSets: Set<SubscriptionListeners<T>[PublishKey<T>]>[] = [];
     const publishPaths = subPubPathMap[event];
+
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
     for (const publishPath of publishPaths) {
       const listenerSet = listeners.get(publishPath);
