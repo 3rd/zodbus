@@ -31,6 +31,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
   const subPubPathMap = getSubPubPathMap(schema) as Record<SubscriptionKey<T>, PublishKey<T>[]>;
   const eventNames = Array.from(new Set(Object.values(subPubPathMap).flat())) as PublishKey<T>[];
   const listeners = new Map<PublishKey<T>, Set<SubscriptionListeners<T>[PublishKey<T>]>>();
+  const validationSchemaCache = new Map<string, ZodType>();
 
   const getListenerSetsForSubscriptionKey = (event: SubscriptionKey<T>): Set<unknown>[] => {
     if (event === "*") return Array.from(listeners.values());
@@ -46,6 +47,14 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
   };
 
   const validatePayloadOrPanic = (event: string, data: unknown): void => {
+    // check cache
+    const zodSchema = validationSchemaCache.get(event);
+    if (zodSchema) {
+      zodSchema.parse(data);
+      return;
+    }
+
+    // traverse schema
     const pathFragments = event.split(".");
     let currentSchema: Schema | ZodType = schema;
     for (const fragment of pathFragments) {
@@ -55,6 +64,8 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
       }
     }
     if (currentSchema instanceof ZodType) {
+      // cache the schema and validate
+      validationSchemaCache.set(event, currentSchema);
       currentSchema.parse(data);
     } else {
       throw new ValidationError(`Reached invalid payload schema for: "${event}"`);
@@ -106,9 +117,12 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
     const publishPaths = event === "*" ? eventNames : subPubPathMap[event];
     if (!publishPaths) throw new ValidationError(`Invalid event: "${event}"`);
     for (const publishPath of publishPaths) {
-      const listenerSet = listeners.get(publishPath) ?? new Set();
+      let listenerSet = listeners.get(publishPath);
+      if (!listenerSet) {
+        listenerSet = new Set();
+        listeners.set(publishPath, listenerSet);
+      }
       listenerSet.add(listener as SubscriptionListeners<T>[PublishKey<T>]);
-      listeners.set(publishPath, listenerSet);
     }
     return { event, listener, unsubscribe: () => unsubscribe(event, listener) };
   };

@@ -1,6 +1,8 @@
 import { ZodType } from "zod/v4";
 import { Schema } from "../types";
 
+const subPubPathMapCache = new WeakMap<Schema | ZodType, Record<string, string[]>>();
+
 export const hasWildcard = (path: string): boolean => path.split(".").includes("*");
 
 export const getPublishPaths = (schema: Schema | ZodType, prefix = ""): string[] => {
@@ -31,6 +33,11 @@ export const getSubscribePaths = (schema: Schema | ZodType, prefix = ""): string
 };
 
 export const getSubPubPathMap = (schema: Schema | ZodType): Record<string, string[]> => {
+  // check cache
+  const cached = subPubPathMapCache.get(schema);
+  if (cached) return cached;
+
+  // compute if not cached
   const map: Record<string, string[]> = {};
   const publishPaths = getPublishPaths(schema);
   const subscribePaths = getSubscribePaths(schema);
@@ -47,5 +54,7 @@ export const getSubPubPathMap = (schema: Schema | ZodType): Record<string, strin
     });
   }
 
+  // store in cache
+  subPubPathMapCache.set(schema, map);
   return map;
 };
