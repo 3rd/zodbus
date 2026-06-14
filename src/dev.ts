@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-import { z } from "zod/v4";
+/* eslint-disable @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars */
+import { z } from "zod";
 import type { HasWildcard, InferSubscriptionListener, SchemaPath, SubscriptionListeners, WildcardPath } from "./types";
 import { create } from ".";
 

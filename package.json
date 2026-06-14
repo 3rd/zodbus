@@ -13,6 +13,10 @@
     "email": "3rd@users.noreply.github.com"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.14.0",
   "files": [
     "dist"
   ],
@@ -36,7 +40,7 @@
     "test": "jest",
     "tsc": "tsc",
     "benchmark": "cd benchmark && npm run benchmark",
-    "prepare": "husky install",
+    "prepare": "husky",
     "prepublishOnly": "pnpm run build && pnpm run tsc && pnpm run test",
     "clean": "rm -rf dist"
   },
@@ -46,7 +50,6 @@
   "prettier": {
     "arrowParens": "always",
     "bracketSpacing": true,
-    "jsxBracketSameLine": false,
     "printWidth": 120,
     "quoteProps": "as-needed",
     "semi": true,
@@ -62,7 +65,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.6.2",
-    "esbuild": "^0.25.10",
+    "esbuild": "^0.28.1",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
     "lint-staged": "^16.2.3",
@@ -73,5 +76,10 @@
   },
   "peerDependencies": {
     "zod": "^4.1.11"
+  },
+  "pnpm": {
+    "overrides": {
+      "handlebars": "^4.7.9"
+    }
   }
 }

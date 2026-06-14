@@ -1,4 +1,4 @@
-import { ZodType } from "zod/v4";
+import { ZodType } from "zod";
 
 export type IsZodType<T> = T extends ZodType ? true : false;
 export type IsSchema<T> = T extends Schema ? true : false;
@@ -25,7 +25,7 @@ export type InferSubscriptionListener<
         : never
       : never
   : K extends keyof T
-    ? T[K] extends ZodType<infer O, any>
+    ? T[K] extends ZodType<infer O, unknown>
       ? Listener<`${P}${K}`, O>
       : never
     : HasWildcard<K & string> extends true
@@ -45,7 +45,7 @@ export type InferSubscriptionListenerPayload<
         : never
       : never
   : K extends keyof T
-    ? T[K] extends ZodType<infer O, any>
+    ? T[K] extends ZodType<infer O, unknown>
       ? O
       : never
     : HasWildcard<K & string> extends true

@@ -1,4 +1,4 @@
-import { ZodType } from "zod/v4";
+import { ZodType } from "zod";
 import type { PublishKey, Schema, SubscriptionKey, SubscriptionListenerPayloads, SubscriptionListeners } from "./types";
 import { RuntimeError, ValidationError } from "./errors";
 import { getSubPubPathMap } from "./utils/schema";
@@ -176,7 +176,7 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
   /** Waits for an event to be published.
    * Returns a promise that resolves when the event is published.
    * @param event The event to wait for.
-   * @param options.timeout The timeout in milliseconds. Defaults to 10000.
+   * @param options.timeout The timeout in milliseconds. Defaults to 5000.
    * @param options.filter A function that returns true if the event should be accepted.
    * @returns A promise that resolves when the event is published with the data passed to the listener. */
   const waitFor = <K extends SubscriptionKey<T>>(

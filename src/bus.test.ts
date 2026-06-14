@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { create } from "./bus";
 import { errorPrefix } from "./constants";
 
@@ -282,6 +282,7 @@ describe("bus", () => {
   it("awaits for an event to be published with a filter", async () => {
     const bus = create({ schema });
 
+    // eslint-disable-next-line testing-library/await-async-utils
     let promise = bus.waitFor("foo", {
       filter: (event: { field: string }) => event.field === "test",
       timeout: 10,
@@ -289,6 +290,7 @@ describe("bus", () => {
     bus.publish("foo", { field: "not-test" });
     await expect(promise).rejects.toThrow(`${errorPrefix}Timeout waiting for event: "foo"`);
 
+    // eslint-disable-next-line testing-library/await-async-utils
     promise = bus.waitFor("foo", {
       filter: (event: { field: string }) => event.field === "test",
       timeout: 10,
