@@ -1,3 +1,13 @@
+# [2.0.0](https://github.com/3rd/zodbus/compare/v1.1.3...v2.0.0) (2026-06-29)
+
+### Features
+
+- upgrade to zod v4 ([4c39e8f](https://github.com/3rd/zodbus/commit/4c39e8f5ef3378794b49b7b0a7652f36374060df))
+
+### BREAKING CHANGES
+
+- requires zod v4 as peer dependency
+
 ## [1.1.3](https://github.com/3rd/zodbus/compare/v1.1.2...v1.1.3) (2024-05-17)
 
 ### Bug Fixes
