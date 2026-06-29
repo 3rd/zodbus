@@ -58,10 +58,11 @@ function create<T extends Schema>({ schema, validate = true }: BusOptions<T>): B
     const pathFragments = event.split(".");
     let currentSchema: Schema | ZodType = schema;
     for (const fragment of pathFragments) {
-      currentSchema = (currentSchema as Record<string, Schema | ZodType>)[fragment];
-      if (!currentSchema) {
+      const nextSchema: Schema | ZodType | undefined = (currentSchema as Record<string, Schema | ZodType>)[fragment];
+      if (!nextSchema) {
         throw new ValidationError(`Invalid event: "${event}". Could not resolve "${fragment}" fragment.`);
       }
+      currentSchema = nextSchema;
     }
     if (currentSchema instanceof ZodType) {
       // cache the schema and validate

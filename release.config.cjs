@@ -1,5 +1,6 @@
 module.exports = {
   branches: ["master"],
+  repositoryUrl: "https://github.com/3rd/zodbus.git",
   plugins: [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -9,7 +10,7 @@ module.exports = {
         changelogFile: "CHANGELOG.md",
       },
     ],
-    "@semantic-release/github",
+    "@semantic-release/npm",
     [
       "@semantic-release/git",
       {
@@ -17,6 +18,5 @@ module.exports = {
         message: "chore(release): set `package.json` to ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
     ],
-    "@semantic-release/npm",
   ],
 };

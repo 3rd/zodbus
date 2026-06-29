@@ -1,15 +1,21 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "lib": ["es2022", "dom"],
-    "module": "esnext",
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleDetection": "force",
     "moduleResolution": "bundler",
-    "strict": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
-    "esModuleInterop": true,
+    "declaration": true,
+    "strict": true,
     "skipLibCheck": true,
-    "isolatedModules": true,
-    "types": ["jest", "node"]
+    "isolatedDeclarations": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "types": ["node", "bun"]
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts", "tsdown.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }

@@ -1,5 +1,5 @@
 import { ZodType } from "zod";
-import { Schema } from "../types";
+import type { Schema } from "../types";
 
 const subPubPathMapCache = new WeakMap<Schema | ZodType, Record<string, string[]>>();
 
